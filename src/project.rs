@@ -10,6 +10,8 @@ pub struct DirectoryHashMap(HashMap<String, String>);
 pub struct Project {
     name: String,
     language: Language,
+    libraries: Vec<String>,
+    library_directories: Vec<String>,
     directories: DirectoryHashMap,
 }
 
@@ -84,6 +86,14 @@ impl Project {
         &self.name
     }
 
+    pub fn get_libraries(&self) -> &Vec<String> {
+        &self.libraries
+    }
+
+    pub fn get_library_dirs(&self) -> &Vec<String> {
+        &self.library_directories
+    }
+
     pub fn set_language(&mut self, lang: Language) {
         self.language = lang;
     }
@@ -98,6 +108,8 @@ impl Default for Project {
         Self {
             name: "Ocean Project".to_string(),
             language: Language::C,
+            libraries: Vec::new(),
+            library_directories: Vec::new(),
             directories: DirectoryHashMap::new(),
         }
     }

@@ -171,8 +171,17 @@ Options:
 
     c.args(&flags.split(" ").collect::<Vec<&str>>())
         .arg("-o")
-        .arg(format!("{}/{}", build_path, executable_name))
-        .spawn()
+        .arg(format!("{}/{}", build_path, executable_name));
+
+    for library_directory in project.get_library_dirs() {
+        c.arg(format!("-L{}", library_directory));
+    }
+
+    for library in project.get_libraries() {
+        c.arg(format!("-l{}", library));
+    }
+
+    c.spawn()
         .expect("Could not compile objects to final executable")
         .wait()
         .unwrap();
@@ -244,7 +253,6 @@ fn new(args: &[String], project: &mut Project) -> Result<(), String> {
 Usage: ocean new [NAME] [OPTIONS]
 
 This creates a new project with a generated Ocean.toml in a new directory with a specified NAME.
-
 Options:
     -C                  Creates a new C project (default).
     -CXX                Creates a new C++ project.
