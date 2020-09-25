@@ -319,8 +319,7 @@ Options:
         toml::to_string(project).expect("Could not transform project data into Ocean.toml");
     let code_content = match project.get_language() {
         Language::C => {
-            "
-#include <stdio.h>
+            "#include <stdio.h>
 
 int main() {
     printf(\"Hello, world\");
@@ -328,8 +327,7 @@ int main() {
 "
         }
         Language::CXX => {
-            "
-#include <iostream>
+            "#include <iostream>
 
 int main() {
     std::cout << \"Hello, world\" << std::endl;
@@ -337,6 +335,7 @@ int main() {
 "
         }
     };
+    let ignore_content = "/build/\n/obj/";
 
     create_dir_all(&format!("{}/src", project.get_name()))
         .expect("Could not create project and source directory");
@@ -359,6 +358,18 @@ int main() {
             project.get_language().get_extension()
         )
         .as_str(),
+    );
+
+    let mut ignore_file = File::create(&format!("{}/.gitignore", project.get_name()))
+        .expect("Could not create .gitignore");
+    ignore_file
+        .write_all(ignore_content.as_bytes())
+        .expect("Could not write into .gitignore");
+
+    println!(
+        "Created a new {} project \"{}\"",
+        project.get_language(),
+        project.get_name()
     );
 
     Ok(())
