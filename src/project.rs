@@ -1,7 +1,6 @@
-use crate::language::Language;
+use crate::language::*;
 use serde_derive::*;
-use std::collections::hash_map::Values;
-use std::collections::HashMap;
+use std::{collections::hash_map::Values, collections::HashMap};
 
 #[derive(Deserialize, Serialize)]
 pub struct DirectoryHashMap(HashMap<String, String>);
@@ -13,6 +12,7 @@ pub struct Project {
     libraries: Vec<String>,
     library_directories: Vec<String>,
     directories: DirectoryHashMap,
+    compiler: Compiler,
 }
 
 impl DirectoryHashMap {
@@ -32,6 +32,7 @@ impl DirectoryHashMap {
     pub fn get_all_dirs(&self) -> Values<'_, String, String> {
         self.0.values()
     }
+
     pub fn get_build_dir(&self) -> &String {
         &self.0["build_dir"]
     }
@@ -70,6 +71,14 @@ impl DirectoryHashMap {
 }
 
 impl Project {
+    pub fn get_compiler(&self) -> &Compiler {
+        &self.compiler
+    }
+
+    pub fn get_compiler_mut(&mut self) -> &mut Compiler {
+        &mut self.compiler
+    }
+
     pub fn get_directories(&self) -> &DirectoryHashMap {
         &self.directories
     }
@@ -111,6 +120,7 @@ impl Default for Project {
             libraries: Vec::new(),
             library_directories: Vec::new(),
             directories: DirectoryHashMap::new(),
+            compiler: Compiler::new(),
         }
     }
 }

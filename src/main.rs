@@ -1,14 +1,15 @@
 mod language;
 mod project;
 
-use crate::language::Language;
-use crate::project::*;
-use std::env;
-use std::ffi::OsStr;
-use std::fs::{create_dir_all, read_dir, remove_dir_all, rename, File};
-use std::io::prelude::*;
-use std::path::Path;
-use std::process::Command;
+use crate::{language::*, project::*};
+use std::{
+    env,
+    ffi::OsStr,
+    fs::{create_dir_all, read_dir, remove_dir_all, rename, File},
+    io::prelude::*,
+    path::Path,
+    process::Command,
+};
 
 fn check_for_toml() -> Result<(), String> {
     if Path::new("./Ocean.toml").exists() {
@@ -34,6 +35,7 @@ Create and manage C and C++ projects.
     run             Runs the current project, builds if no build is present
     new             Creates a new C/C++ project in a new directory
     clean           Cleans the current project's build artifacts
+    get             Returns the values set in the Ocean.toml
         "
     );
 }
@@ -46,6 +48,8 @@ fn build(args: &[String], project: &mut Project) -> Result<(), String> {
     check_for_toml()?;
 
     let mut build_mode = "debug";
+    let mut is_verbose = false;
+
     let executable_name = {
         if cfg!(windows) {
             format!("{}.exe", project.get_name())
@@ -65,7 +69,9 @@ fn build(args: &[String], project: &mut Project) -> Result<(), String> {
     }
 
     let file_extension = project.get_language().get_extension();
-    let compiler = project.get_language().get_compiler();
+    let compiler = project
+        .get_compiler()
+        .get_compiler_command(project.get_language());
 
     if args.len() > 0 {
         match args[0].as_str() {
@@ -79,12 +85,14 @@ By default, this builds projects in debug mode.
 Options:
     -r, --release   Builds the current project in release mode
     -d, --debug     Builds the current project in debug mode (this is turned on by default)
+    -v, --verbose   Makes the compiler output verbose.
             "
                 );
                 return Ok(());
             }
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
+            "-v" | "--verbose" => is_verbose = true,
             _ => (),
         }
     }
@@ -139,8 +147,13 @@ Options:
             file.file_stem().unwrap().to_str().unwrap()
         );
 
-        Command::new(compiler.clone())
-            .arg("-c")
+        let mut c = Command::new(compiler.clone());
+
+        if is_verbose {
+            c.arg("-v");
+        }
+
+        c.arg("-c")
             .arg(file.to_str().unwrap())
             .spawn()
             .expect("Could not execute compiler")
@@ -165,6 +178,11 @@ Options:
     }
 
     let mut c = Command::new(compiler);
+
+    if is_verbose {
+        c.arg("-v");
+    }
+
     for obj in object_files {
         c.arg(obj);
     }
@@ -206,12 +224,14 @@ By default, this run projects in debug mode.
 Options:
     -r, --release   Runs the current project in release mode
     -d, --debug     Runs the current project in debug mode (this is turned on by default)
+    -v, --verbose   Makes the compiler output verbose.
             "
                 );
                 return Ok(());
             }
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
+            // -v is handled by build()
             _ => (),
         }
     }
@@ -259,6 +279,7 @@ Options:
     -b, --build-dir     Sets the build directory (default is \"./build\")
     -s, --source-dir    Sets the source directory (default is \"./src\")
     -o, --obj-dir       Sets the objects directory (default is \"./obj\")
+    -c, --compiler      Sets the compiler for the current project (default is gcc for C and g++ for C++).
             "
                 );
                 return Ok(());
@@ -293,6 +314,7 @@ Options:
     }
 
     for index in 0..args[1..].len() {
+        let lang = project.get_language().clone();
         match args[index + 1].as_str() {
             "-C" => project.set_language(Language::C),
             "-CXX" => project.set_language(Language::CXX),
@@ -311,6 +333,11 @@ Options:
                     .expect("Did not specify an objects directory")
                     .clone(),
             ),
+            "-c" | "--compiler" => project.get_compiler_mut().set_compiler_command(
+                lang,
+                args.get(index + 2)
+                    .expect(format!("Did not specify custom {} compiler", lang).as_str()),
+            ),
             _ => (),
         }
     }
@@ -322,7 +349,7 @@ Options:
             "#include <stdio.h>
 
 int main() {
-    printf(\"Hello, world\");
+    printf(\"Hello, world\\n\");
 }
 "
         }
@@ -389,12 +416,68 @@ fn clean(project: &Project) -> Result<(), String> {
     Ok(())
 }
 
+fn get_data(args: &[String], project: &Project) -> Result<(), String> {
+    check_for_toml()?;
+
+    let help = 
+            "
+Usage: ocean get [OPTION]
+
+This creates a new project with a generated Ocean.toml in a new directory with a specified NAME.
+
+Option:
+    name                            Prints the name of the project.
+    lang, language                  Prints the current language of the project.
+    libs, libraries                 Prints the libraries being compiled with the project.
+    lib_dirs, library_directories   Prints the library directories that would be searched by the linker.
+    compiler, current_compiler      Prints the current compiler being used for the project.
+    c_compiler                      Prints the compiler being used for the C project.
+    c++_compiler, cxx_compiler      Prints the compiler being used for the C++ project.
+    ";
+
+    if args.is_empty() {
+        println!("{}", help);
+        return Err("No value given".to_string());
+    }
+    let data = args[0].as_str();
+    Ok(match data {
+        "--help" => println!("{}", help),
+        "name" => println!("{}", project.get_name().clone()),
+        "lang" | "language" => println!("{}", project.get_language().to_string()),
+        "libs" | "libraries" => println!("{:#?}", project.get_libraries()),
+        "lib_dirs" | "library_directories" => {
+            println!("{:#?}", project.get_directories().get_all_dirs())
+        }
+        "compiler" | "current_compiler" => println!(
+            "{}",
+            project
+                .get_compiler()
+                .get_compiler_command(project.get_language())
+                .clone()
+        ),
+        "c_compiler" => println!(
+            "{}",
+            project
+                .get_compiler()
+                .get_compiler_command(&Language::C)
+                .clone()
+        ),
+        "c++_compiler" | "cxx_compiler" => println!(
+            "{}",
+            project
+                .get_compiler()
+                .get_compiler_command(&Language::CXX)
+                .clone()
+        ),
+        _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
+    })
+}
+
 fn main() -> Result<(), String> {
     let mut args: Vec<String> = env::args().collect();
     if args.len() > 1 {
         args = args[1..].to_vec();
     } else {
-        println!("No arguments specified");
         help(None);
         return Err("No arguments were specified".to_string());
     }
@@ -420,6 +503,7 @@ fn main() -> Result<(), String> {
         "run" => run(&args[1..], &mut project)?,
         "new" => new(&args[1..], &mut project)?,
         "clean" => clean(&project)?,
+        "get" => get_data(&args[1..], &project)?,
         "help" => help(None),
         _ => help(Some(&args[0])),
     })
