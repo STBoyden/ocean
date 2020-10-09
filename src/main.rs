@@ -393,6 +393,8 @@ int main() {
         .write_all(ignore_content.as_bytes())
         .expect("Could not write into .gitignore");
 
+    let _ = File::create(&format!("{}/.ccls", project.get_name())).expect("Could not create .ccls");
+
     println!(
         "Created a new {} project \"{}\"",
         project.get_language(),
