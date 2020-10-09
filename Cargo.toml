@@ -1,6 +1,6 @@
 [package]
 name = "ocean"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["STBoyden <stboyden@stboyden.xyz>"]
 edition = "2018"
 

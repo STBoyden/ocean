@@ -5,7 +5,7 @@ use crate::{language::*, project::*};
 use std::{
     env,
     ffi::OsStr,
-    fs::{create_dir_all, read_dir, remove_dir_all, rename, File},
+    fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
     io::prelude::*,
     path::Path,
     process::Command,
@@ -416,6 +416,78 @@ fn clean(project: &Project) -> Result<(), String> {
     Ok(())
 }
 
+fn set_data(args: &[String], project: &mut Project) -> Result<(), String> {
+    check_for_toml()?;
+
+    let help = "
+Usage: ocean set [KEY]
+
+This set values inside the Ocean project file to a value specified by the user.
+
+Option:
+    build_dir [DIRECTORY]                               Sets the build directory for the project.
+    c++_compiler [COMPILER], cxx_compiler [COMPILER]    Set the compiler being used for the C++ \
+                project.
+    c_compiler [COMPILER]                               Sets the compiler being used for the C \
+                project.
+    compiler [COMPILER], current_compiler [COMPILER]    Sets the current compiler being used for \
+                the project.
+    lang [LANG], language [LANG]                        Set the current language of the project.
+    lib_dirs [DIRS], library_directories [DIRS]         Sets the library directories that would be \
+                searched by the linker, split by commas.
+    libs [LIBS], libraries [LIBS]                       Sets the libraries being compiled with the \
+                project, split by commas.
+    name [NAME]                                         Sets the name of the project.
+    object_dir [DIRECTORY]                              Sets the object output directory.
+    source_dir [DIRECTORY]                              Sets the source code directory.
+    ";
+
+    if args.is_empty() {
+        println!("{}", help);
+        return Err("No key given".to_string());
+    } else if args[0] == "--help" {
+        println!("{}", help);
+        return Ok(());
+    } else if args.len() > 2 {
+        return Err("No value supplied for given key".to_string());
+    }
+
+    match (args[0].as_str(), &args[1]) {
+        ("name", n) => project.set_name(n.clone()),
+        (c, lang) if c == "lang" || c == "language" => match lang.to_lowercase().as_str() {
+            "c++" | "cxx" => project.set_language(Language::CXX),
+            "c" => project.set_language(Language::C),
+            _ => return Err("Invalid language.".to_string()),
+        },
+        (c, libs) if c == "libs" || c == "libraries" =>
+            for lib in libs.split(",") {
+                project.add_library(lib.to_string());
+            },
+        (c, dirs) if c == "lib_dirs" || c == "library_directories" =>
+            for dir in dirs.split(",") {
+                project.add_library_directories(dir.to_string());
+            },
+        ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
+        (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" =>
+            project.set_compiler(Language::CXX, compiler.clone()),
+        (c, compiler) if c == "compiler" || c == "current_compiler" =>
+            project.set_current_compiler(compiler.clone()),
+        ("object_dir", dir) => project.get_directories_mut().set_objects_dir(dir.clone()),
+        ("source_dir", dir) => project.get_directories_mut().set_source_dir(dir.clone()),
+        ("build_dir", dir) => project.get_directories_mut().set_build_dir(dir.clone()),
+        _ => return Err("Incorrect data key.".to_string()),
+    }
+
+    remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
+    let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
+    let toml_content =
+        toml::to_string(project).expect("Could not transform project data into Ocean.toml");
+    file.write_all(toml_content.as_bytes())
+        .expect("Could not write to Ocean.toml");
+
+    Ok(())
+}
+
 fn get_data(args: &[String], project: &Project) -> Result<(), String> {
     check_for_toml()?;
 
@@ -426,6 +498,7 @@ This gets the current values inside the Ocean project file related to a data key
                 user.
 
 Option:
+    build_dir                       Prints the build directory for the current project.
     c++_compiler, cxx_compiler      Prints the compiler being used for the C++ project.
     c_compiler                      Prints the compiler being used for the C project.
     compiler, current_compiler      Prints the current compiler being used for the project.
@@ -434,6 +507,8 @@ Option:
                 linker.
     libs, libraries                 Prints the libraries being compiled with the project.
     name                            Prints the name of the project.
+    object_dir                      Prints the object output directory.
+    source_dir                      Prints the source code directory.
     ";
 
     if args.is_empty() {
@@ -505,6 +580,7 @@ fn main() -> Result<(), String> {
         "help" | "--help" => help(None),
         "new" => new(&args[1..], &mut project)?,
         "run" => run(&args[1..], &mut project)?,
+        "set" => set_data(&args[1..], &mut project)?,
         _ => help(Some(&args[0])),
     })
 }
