@@ -21,29 +21,21 @@ impl DirectoryHashMap {
             0: {
                 let mut hm = HashMap::new();
                 hm.insert("build_dir".to_string(), "./build".to_string());
-                hm.insert("source_dir".to_string(), "./src".to_string());
                 hm.insert("object_dir".to_string(), "./obj".to_string());
+                hm.insert("source_dir".to_string(), "./src".to_string());
 
                 hm
             },
         }
     }
 
-    pub fn get_all_dirs(&self) -> Values<'_, String, String> {
-        self.0.values()
-    }
+    pub fn get_all_dirs(&self) -> Values<'_, String, String> { self.0.values() }
 
-    pub fn get_build_dir(&self) -> &String {
-        &self.0["build_dir"]
-    }
+    pub fn get_build_dir(&self) -> &String { &self.0["build_dir"] }
 
-    pub fn get_source_dir(&self) -> &String {
-        &self.0["source_dir"]
-    }
+    pub fn get_objects_dir(&self) -> &String { &self.0["object_dir"] }
 
-    pub fn get_objects_dir(&self) -> &String {
-        &self.0["object_dir"]
-    }
+    pub fn get_source_dir(&self) -> &String { &self.0["source_dir"] }
 
     pub fn set_build_dir(&mut self, dir: String) {
         self.0
@@ -71,44 +63,57 @@ impl DirectoryHashMap {
 }
 
 impl Project {
-    pub fn get_compiler(&self) -> &Compiler {
-        &self.compiler
+    pub fn get_compiler(&self) -> &Compiler { &self.compiler }
+
+    pub fn get_compiler_mut(&mut self) -> &mut Compiler { &mut self.compiler }
+
+    pub fn get_directories(&self) -> &DirectoryHashMap { &self.directories }
+
+    pub fn get_directories_mut(&mut self) -> &mut DirectoryHashMap { &mut self.directories }
+
+    pub fn get_language(&self) -> &Language { &self.language }
+
+    pub fn get_libraries(&self) -> &Vec<String> { &self.libraries }
+
+    pub fn get_library_dirs(&self) -> &Vec<String> { &self.library_directories }
+
+    pub fn get_name(&self) -> &String { &self.name }
+
+    pub fn set_language(&mut self, lang: Language) { self.language = lang; }
+
+    pub fn set_name(&mut self, name: String) { self.name = name; }
+
+    pub fn add_library(&mut self, lib_path: String) {
+        println!("Added the '{}' library", lib_path);
+        self.libraries.push(lib_path);
     }
 
-    pub fn get_compiler_mut(&mut self) -> &mut Compiler {
-        &mut self.compiler
+    pub fn add_library_directories(&mut self, lib_dir: String) {
+        println!("Added '{}' to the library directories.", lib_dir);
+        self.library_directories.push(lib_dir);
     }
 
-    pub fn get_directories(&self) -> &DirectoryHashMap {
-        &self.directories
+    pub fn set_compiler(&mut self, language: Language, compiler_command: String) {
+        println!(
+            "Set compiler command for {} to '{}'",
+            language.as_string(),
+            compiler_command
+        );
+        self.get_compiler_mut()
+            .set_compiler_command(language, compiler_command);
     }
 
-    pub fn get_directories_mut(&mut self) -> &mut DirectoryHashMap {
-        &mut self.directories
-    }
+    pub fn set_current_compiler(&mut self, compiler_command: String) {
+        println!(
+            "Set compiler command for {} to '{}'",
+            self.language.as_string(),
+            compiler_command
+        );
 
-    pub fn get_language(&self) -> &Language {
-        &self.language
-    }
+        let language = self.language.clone();
 
-    pub fn get_name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn get_libraries(&self) -> &Vec<String> {
-        &self.libraries
-    }
-
-    pub fn get_library_dirs(&self) -> &Vec<String> {
-        &self.library_directories
-    }
-
-    pub fn set_language(&mut self, lang: Language) {
-        self.language = lang;
-    }
-
-    pub fn set_name(&mut self, name: String) {
-        self.name = name;
+        self.get_compiler_mut()
+            .set_compiler_command(language, compiler_command);
     }
 }
 

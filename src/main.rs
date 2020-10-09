@@ -32,10 +32,11 @@ Usage: ocean [OPTION]
 Create and manage C and C++ projects.
 
     build           Builds the current project
-    run             Runs the current project, builds if no build is present
-    new             Creates a new C/C++ project in a new directory
     clean           Cleans the current project's build artifacts
     get             Returns the values set in the Ocean.toml
+    help, --help    Shows this help text
+    new             Creates a new C/C++ project in a new directory
+    run             Runs the current project, builds if no build is present
         "
     );
 }
@@ -83,13 +84,13 @@ Usage: ocean build [OPTIONS]
 By default, this builds projects in debug mode.
 
 Options:
-    -r, --release   Builds the current project in release mode
     -d, --debug     Builds the current project in debug mode (this is turned on by default)
+    -r, --release   Builds the current project in release mode
     -v, --verbose   Makes the compiler output verbose.
             "
                 );
                 return Ok(());
-            }
+            },
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
             "-v" | "--verbose" => is_verbose = true,
@@ -222,13 +223,13 @@ Usage: ocean run [OPTIONS]
 By default, this run projects in debug mode.
 
 Options:
-    -r, --release   Runs the current project in release mode
     -d, --debug     Runs the current project in debug mode (this is turned on by default)
+    -r, --release   Runs the current project in release mode
     -v, --verbose   Makes the compiler output verbose.
             "
                 );
                 return Ok(());
-            }
+            },
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
             // -v is handled by build()
@@ -279,11 +280,12 @@ Options:
     -b, --build-dir     Sets the build directory (default is \"./build\")
     -s, --source-dir    Sets the source directory (default is \"./src\")
     -o, --obj-dir       Sets the objects directory (default is \"./obj\")
-    -c, --compiler      Sets the compiler for the current project (default is gcc for C and g++ for C++).
+    -c, --compiler      Sets the compiler for the current project (default is gcc for C and g++ \
+                     for C++).
             "
                 );
                 return Ok(());
-            }
+            },
             _ => {
                 let name = args[0].to_string();
                 if name != "" {
@@ -291,7 +293,7 @@ Options:
                 } else {
                     return Err("Did not specify project name".to_string());
                 }
-            }
+            },
         }
     } else {
         return Err("Did not specify project name".to_string());
@@ -345,22 +347,20 @@ Options:
     let toml_content =
         toml::to_string(project).expect("Could not transform project data into Ocean.toml");
     let code_content = match project.get_language() {
-        Language::C => {
+        Language::C =>
             "#include <stdio.h>
 
 int main() {
     printf(\"Hello, world\\n\");
 }
-"
-        }
-        Language::CXX => {
+",
+        Language::CXX =>
             "#include <iostream>
 
 int main() {
     std::cout << \"Hello, world\" << std::endl;
 }
-"
-        }
+",
     };
     let ignore_content = "/build/\n/obj/";
 
@@ -419,20 +419,21 @@ fn clean(project: &Project) -> Result<(), String> {
 fn get_data(args: &[String], project: &Project) -> Result<(), String> {
     check_for_toml()?;
 
-    let help = 
-            "
-Usage: ocean get [OPTION]
+    let help = "
+Usage: ocean get [KEY]
 
-This creates a new project with a generated Ocean.toml in a new directory with a specified NAME.
+This gets the current values inside the Ocean project file related to a data key entered by the \
+                user.
 
 Option:
-    name                            Prints the name of the project.
-    lang, language                  Prints the current language of the project.
-    libs, libraries                 Prints the libraries being compiled with the project.
-    lib_dirs, library_directories   Prints the library directories that would be searched by the linker.
-    compiler, current_compiler      Prints the current compiler being used for the project.
-    c_compiler                      Prints the compiler being used for the C project.
     c++_compiler, cxx_compiler      Prints the compiler being used for the C++ project.
+    c_compiler                      Prints the compiler being used for the C project.
+    compiler, current_compiler      Prints the current compiler being used for the project.
+    lang, language                  Prints the current language of the project.
+    lib_dirs, library_directories   Prints the library directories that would be searched by the \
+                linker.
+    libs, libraries                 Prints the libraries being compiled with the project.
+    name                            Prints the name of the project.
     ";
 
     if args.is_empty() {
@@ -445,9 +446,8 @@ Option:
         "name" => println!("{}", project.get_name().clone()),
         "lang" | "language" => println!("{}", project.get_language().to_string()),
         "libs" | "libraries" => println!("{:#?}", project.get_libraries()),
-        "lib_dirs" | "library_directories" => {
-            println!("{:#?}", project.get_directories().get_all_dirs())
-        }
+        "lib_dirs" | "library_directories" =>
+            println!("{:#?}", project.get_directories().get_all_dirs()),
         "compiler" | "current_compiler" => println!(
             "{}",
             project
@@ -489,10 +489,10 @@ fn main() -> Result<(), String> {
             Ok(mut f) => match f.read_to_string(&mut contents) {
                 Err(_) => {
                     return Err("Could not read file".to_string());
-                }
-                _ => {}
+                },
+                _ => {},
             },
-            _ => {}
+            _ => {},
         }
 
         toml::from_str(contents.as_str()).unwrap_or_default()
@@ -500,11 +500,11 @@ fn main() -> Result<(), String> {
 
     Ok(match args[0].as_str() {
         "build" => build(&args[1..], &mut project)?,
-        "run" => run(&args[1..], &mut project)?,
-        "new" => new(&args[1..], &mut project)?,
         "clean" => clean(&project)?,
         "get" => get_data(&args[1..], &project)?,
-        "help" => help(None),
+        "help" | "--help" => help(None),
+        "new" => new(&args[1..], &mut project)?,
+        "run" => run(&args[1..], &mut project)?,
         _ => help(Some(&args[0])),
     })
 }
