@@ -210,8 +210,6 @@ Options:
 }
 
 fn run(args: &[String], project: &mut Project) -> Result<(), String> {
-    build(args, project)?;
-
     let mut build_mode = "debug";
 
     if args.len() > 0 {
@@ -237,6 +235,8 @@ Options:
             _ => (),
         }
     }
+
+    build(args, project)?;
 
     let build_path = format!(
         "{}/{}",
