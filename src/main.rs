@@ -15,10 +15,7 @@ fn check_for_toml() -> Result<(), String> {
     if Path::new("./Ocean.toml").exists() {
         return Ok(());
     }
-    Err(
-        "Could not find Ocean.toml, please make sure that you are in a valid project directory."
-            .to_string(),
-    )
+    Err("Could not find Ocean.toml, please make sure that you are in a valid project directory.".to_string())
 }
 
 fn help(argument: Option<&String>) {
@@ -71,9 +68,7 @@ fn build(args: &[String], project: &mut Project) -> Result<(), String> {
     }
 
     let file_extension = project.get_language().get_extension();
-    let compiler = project
-        .get_compiler()
-        .get_compiler_command(project.get_language());
+    let compiler = project.get_compiler().get_compiler_command(project.get_language());
 
     if args.len() > 0 {
         match args[0].as_str() {
@@ -99,16 +94,8 @@ Options:
         }
     }
 
-    let build_path = format!(
-        "{}/{}",
-        project.get_directories().get_build_dir(),
-        build_mode
-    );
-    let object_path = format!(
-        "{}/{}",
-        project.get_directories().get_objects_dir(),
-        build_mode
-    );
+    let build_path = format!("{}/{}", project.get_directories().get_build_dir(), build_mode);
+    let object_path = format!("{}/{}", project.get_directories().get_objects_dir(), build_mode);
 
     let mut compilable = vec![];
 
@@ -164,11 +151,7 @@ Options:
 
         rename(
             format!("{}.o", file.file_stem().unwrap().to_str().unwrap()),
-            format!(
-                "{}/{}.o",
-                object_path,
-                file.file_stem().unwrap().to_str().unwrap()
-            ),
+            format!("{}/{}.o", object_path, file.file_stem().unwrap().to_str().unwrap()),
         )
         .expect("Could not move object file");
 
@@ -238,11 +221,7 @@ Options:
 
     build(args, project)?;
 
-    let build_path = format!(
-        "{}/{}",
-        project.get_directories().get_build_dir(),
-        build_mode
-    );
+    let build_path = format!("{}/{}", project.get_directories().get_build_dir(), build_mode);
 
     let executable_name = {
         if cfg!(windows) {
@@ -301,9 +280,7 @@ Options:
     }
 
     if Path::new(&format!("{}/Ocean.toml", project.get_name())).exists() {
-        return Err(
-            "Cannot create a new project, Ocean.toml already exists in this directory.".to_string(),
-        );
+        return Err("Cannot create a new project, Ocean.toml already exists in this directory.".to_string());
     }
 
     if Path::new(&format!("{}/", project.get_name())).exists() {
@@ -321,16 +298,12 @@ Options:
         match args[index + 1].as_str() {
             "-C" => project.set_language(Language::C),
             "-CXX" => project.set_language(Language::CXX),
-            "-b" | "--build-dir" => project.get_directories_mut().set_build_dir(
-                args.get(index + 2)
-                    .expect("Did not specify a build directory")
-                    .clone(),
-            ),
-            "-s" | "--source-dir" => project.get_directories_mut().set_source_dir(
-                args.get(index + 2)
-                    .expect("Did not specify a source directory")
-                    .clone(),
-            ),
+            "-b" | "--build-dir" => project
+                .get_directories_mut()
+                .set_build_dir(args.get(index + 2).expect("Did not specify a build directory").clone()),
+            "-s" | "--source-dir" => project
+                .get_directories_mut()
+                .set_source_dir(args.get(index + 2).expect("Did not specify a source directory").clone()),
             "-o" | "--obj-dir" => project.get_directories_mut().set_objects_dir(
                 args.get(index + 2)
                     .expect("Did not specify an objects directory")
@@ -345,8 +318,7 @@ Options:
         }
     }
 
-    let toml_content =
-        toml::to_string(project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = toml::to_string(project).expect("Could not transform project data into Ocean.toml");
     let code_content = match project.get_language() {
         Language::C =>
             "#include <stdio.h>
@@ -365,10 +337,8 @@ int main() {
     };
     let ignore_content = "/build/\n/obj/";
 
-    create_dir_all(&format!("{}/src", project.get_name()))
-        .expect("Could not create project and source directory");
-    let mut file = File::create(&format!("{}/Ocean.toml", project.get_name()))
-        .expect("Could not create Ocean.toml");
+    create_dir_all(&format!("{}/src", project.get_name())).expect("Could not create project and source directory");
+    let mut file = File::create(&format!("{}/Ocean.toml", project.get_name())).expect("Could not create Ocean.toml");
     file.write_all(toml_content.as_bytes())
         .expect("Could not write to Ocean.toml");
 
@@ -380,16 +350,12 @@ int main() {
     ))
     .expect("Could not create code file.");
 
-    code_file.write_all(code_content.as_bytes()).expect(
-        format!(
-            "Could not write to main.{}",
-            project.get_language().get_extension()
-        )
-        .as_str(),
-    );
+    code_file
+        .write_all(code_content.as_bytes())
+        .expect(format!("Could not write to main.{}", project.get_language().get_extension()).as_str());
 
-    let mut ignore_file = File::create(&format!("{}/.gitignore", project.get_name()))
-        .expect("Could not create .gitignore");
+    let mut ignore_file =
+        File::create(&format!("{}/.gitignore", project.get_name())).expect("Could not create .gitignore");
     ignore_file
         .write_all(ignore_content.as_bytes())
         .expect("Could not write into .gitignore");
@@ -429,17 +395,14 @@ This set values inside the Ocean project file to a value specified by the user.
 
 Option:
     build_dir [DIRECTORY]                               Sets the build directory for the project.
-    c++_compiler [COMPILER], cxx_compiler [COMPILER]    Set the compiler being used for the C++ \
-                project.
-    c_compiler [COMPILER]                               Sets the compiler being used for the C \
-                project.
-    compiler [COMPILER], current_compiler [COMPILER]    Sets the current compiler being used for \
-                the project.
+    c++_compiler [COMPILER], cxx_compiler [COMPILER]    Set the compiler being used for the C++ project.
+    c_compiler [COMPILER]                               Sets the compiler being used for the C project.
+    compiler [COMPILER], current_compiler [COMPILER]    Sets the current compiler being used for the project.
     lang [LANG], language [LANG]                        Set the current language of the project.
-    lib_dirs [DIRS], library_directories [DIRS]         Sets the library directories that would be \
-                searched by the linker, split by commas.
-    libs [LIBS], libraries [LIBS]                       Sets the libraries being compiled with the \
-                project, split by commas.
+    lib_dirs [DIRS], library_directories [DIRS]         Sets the library directories that would be searched by the \
+                linker, split by commas.
+    libs [LIBS], libraries [LIBS]                       Sets the libraries being compiled with the project, split by \
+                commas.
     name [NAME]                                         Sets the name of the project.
     object_dir [DIRECTORY]                              Sets the object output directory.
     source_dir [DIRECTORY]                              Sets the source code directory.
@@ -473,8 +436,7 @@ Option:
         ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
         (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" =>
             project.set_compiler(Language::CXX, compiler.clone()),
-        (c, compiler) if c == "compiler" || c == "current_compiler" =>
-            project.set_current_compiler(compiler.clone()),
+        (c, compiler) if c == "compiler" || c == "current_compiler" => project.set_current_compiler(compiler.clone()),
         ("object_dir", dir) => project.get_directories_mut().set_objects_dir(dir.clone()),
         ("source_dir", dir) => project.get_directories_mut().set_source_dir(dir.clone()),
         ("build_dir", dir) => project.get_directories_mut().set_build_dir(dir.clone()),
@@ -483,8 +445,7 @@ Option:
 
     remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
-    let toml_content =
-        toml::to_string(project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = toml::to_string(project).expect("Could not transform project data into Ocean.toml");
     file.write_all(toml_content.as_bytes())
         .expect("Could not write to Ocean.toml");
 
@@ -497,8 +458,7 @@ fn get_data(args: &[String], project: &Project) -> Result<(), String> {
     let help = "
 Usage: ocean get [KEY]
 
-This gets the current values inside the Ocean project file related to a data key entered by the \
-                user.
+This gets the current values inside the Ocean project file related to a data key entered by the user.
 
 Option:
     build_dir                       Prints the build directory for the current project.
@@ -506,8 +466,7 @@ Option:
     c_compiler                      Prints the compiler being used for the C project.
     compiler, current_compiler      Prints the current compiler being used for the project.
     lang, language                  Prints the current language of the project.
-    lib_dirs, library_directories   Prints the library directories that would be searched by the \
-                linker.
+    lib_dirs, library_directories   Prints the library directories that would be searched by the linker.
     libs, libraries                 Prints the libraries being compiled with the project.
     name                            Prints the name of the project.
     object_dir                      Prints the object output directory.
@@ -524,8 +483,7 @@ Option:
         "name" => println!("{}", project.get_name().clone()),
         "lang" | "language" => println!("{}", project.get_language().to_string()),
         "libs" | "libraries" => println!("{:#?}", project.get_libraries()),
-        "lib_dirs" | "library_directories" =>
-            println!("{:#?}", project.get_directories().get_all_dirs()),
+        "lib_dirs" | "library_directories" => println!("{:#?}", project.get_directories().get_all_dirs()),
         "compiler" | "current_compiler" => println!(
             "{}",
             project
@@ -533,19 +491,10 @@ Option:
                 .get_compiler_command(project.get_language())
                 .clone()
         ),
-        "c_compiler" => println!(
-            "{}",
-            project
-                .get_compiler()
-                .get_compiler_command(&Language::C)
-                .clone()
-        ),
+        "c_compiler" => println!("{}", project.get_compiler().get_compiler_command(&Language::C).clone()),
         "c++_compiler" | "cxx_compiler" => println!(
             "{}",
-            project
-                .get_compiler()
-                .get_compiler_command(&Language::CXX)
-                .clone()
+            project.get_compiler().get_compiler_command(&Language::CXX).clone()
         ),
         _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
     })

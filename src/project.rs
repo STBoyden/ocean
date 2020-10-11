@@ -99,8 +99,7 @@ impl Project {
             language.as_string(),
             compiler_command
         );
-        self.get_compiler_mut()
-            .set_compiler_command(language, compiler_command);
+        self.get_compiler_mut().set_compiler_command(language, compiler_command);
     }
 
     pub fn set_current_compiler(&mut self, compiler_command: String) {
@@ -112,8 +111,7 @@ impl Project {
 
         let language = self.language.clone();
 
-        self.get_compiler_mut()
-            .set_compiler_command(language, compiler_command);
+        self.get_compiler_mut().set_compiler_command(language, compiler_command);
     }
 }
 

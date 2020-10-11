@@ -18,9 +18,7 @@ impl Compiler {
         }
     }
 
-    pub fn get_compiler_command(&self, lang: &Language) -> &String {
-        self.0.get(&lang.as_string()).unwrap()
-    }
+    pub fn get_compiler_command(&self, lang: &Language) -> &String { self.0.get(&lang.as_string()).unwrap() }
 
     pub fn set_compiler_command<T: Into<String>>(&mut self, lang: Language, compiler: T) {
         self.0
