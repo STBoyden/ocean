@@ -112,8 +112,8 @@ Options:
     }
 
     let flags = match build_mode {
-        "release" => "-Wall -O3",
-        _ => "-Wall -Og",
+        "release" => "-Wall -Wextra -O3",
+        _ => "-Wall -Wextra -Og",
     };
 
     if !Path::new(&object_path).exists() {

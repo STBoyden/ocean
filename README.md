@@ -30,6 +30,7 @@ the executables to `build/{mode}/{project_name}`.
        Ocean?](#q%3A-how-often-do-you-plan-on-working-on-ocean%3F)
     1. [Why use this over CMake or
        Premake?](#q%3A-why-use-this-over-cmake%2C-premake-(etc.)%3F)
+1. [ToDo](#to-do)
 
 ## Requirements
 - `rustc >= 1.46.0`
@@ -162,3 +163,12 @@ over something like CMake and Premake. Especially for smaller projects where I
 just want to prototype something quickly and easily without having to mess
 around in a CMakeLists.txt. However, Ocean is **not** a replacement for either
 CMake or Premake and is not intended to.
+
+## To Do
+
+- [ ] Use `cc` crate instead of manually calling the compiler commands.
+- [ ] Use `clap` or `structopt` to parse arguments.
+- [ ] Work on incremental builds:
+    - Look into Go's build cache.
+- [ ] Provide examples of Ocean usage with varying degree of project size.
+
