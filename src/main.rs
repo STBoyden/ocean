@@ -73,7 +73,7 @@ fn build(args: &[String], project: &mut Project) -> Result<(), String> {
     let file_extension = project.get_language().get_extension();
     let compiler = project.get_compiler().get_compiler_command(project.get_language());
 
-    if args.len() > 0 {
+    if !args.is_empty() {
         match args[0].as_str() {
             "--help" => {
                 println!(
@@ -175,7 +175,7 @@ Options:
         c.arg(obj);
     }
 
-    c.args(&flags.split(" ").collect::<Vec<&str>>())
+    c.args(&flags.split(' ').collect::<Vec<&str>>())
         .arg("-o")
         .arg(format!("{}/{}", build_path, executable_name));
 
@@ -198,7 +198,7 @@ Options:
 fn run(args: &[String], project: &mut Project) -> Result<(), String> {
     let mut build_mode = "debug";
 
-    if args.len() > 0 {
+    if !args.is_empty() {
         match args[0].as_str() {
             "--help" => {
                 println!(
@@ -252,7 +252,7 @@ fn new(args: &[String], project: &mut Project) -> Result<(), String> {
     let mut do_ccls = false;
     let mut do_vscode = false;
 
-    if args.len() > 0 {
+    if !args.is_empty() {
         match args[0].as_str() {
             "--help" => {
                 println!(
@@ -302,7 +302,7 @@ Options:
     }
 
     for index in 0..args[1..].len() {
-        let lang = project.get_language().clone();
+        let lang = *project.get_language();
         match args[index + 1].as_str() {
             "-C" => project.set_language(Language::C),
             "-CXX" => project.set_language(Language::CXX),
@@ -320,7 +320,7 @@ Options:
             "-c" | "--compiler" => project.get_compiler_mut().set_compiler_command(
                 lang,
                 args.get(index + 2)
-                    .expect(format!("Did not specify custom {} compiler", lang).as_str()),
+                    .unwrap_or_else(|| panic!("Did not specify custom {} compiler", lang)),
             ),
             "--ccls" => do_ccls = true,
             "--vscode" => do_vscode = true,
@@ -362,7 +362,7 @@ int main() {
 
     code_file
         .write_all(code_content.as_bytes())
-        .expect(format!("Could not write to main.{}", project.get_language().get_extension()).as_str());
+        .unwrap_or_else(|_| panic!("Could not write to main.{}", project.get_language().get_extension()));
 
     let mut ignore_file =
         File::create(&format!("{}/.gitignore", project.get_name())).expect("Could not create .gitignore");
@@ -382,7 +382,7 @@ int main() {
         let configs = vscode.get_config();
         create_dir_all(config_dir.clone()).expect("Could not create .vscode directory");
 
-        let mut properties = File::create(format!("{}/c_cpp_properties.json", config_dir.clone(),))
+        let mut properties = File::create(format!("{}/c_cpp_properties.json", config_dir,))
             .expect("Could not create c_cpp_properties.json");
 
         properties
@@ -394,8 +394,7 @@ int main() {
             )
             .expect("Could not write to c_cpp_properties.json");
 
-        let mut launch =
-            File::create(format!("{}/launch.json", config_dir.clone())).expect("Could not write lauch.json");
+        let mut launch = File::create(format!("{}/launch.json", config_dir)).expect("Could not write lauch.json");
 
         launch
             .write_all(
@@ -406,7 +405,7 @@ int main() {
             )
             .expect("Could not write to tasks.json");
 
-        let mut tasks = File::create(format!("{}/tasks.json", config_dir.clone())).expect("Could not write tasks.json");
+        let mut tasks = File::create(format!("{}/tasks.json", config_dir)).expect("Could not write tasks.json");
 
         tasks
             .write_all(
@@ -435,7 +434,7 @@ fn clean(project: &Project) -> Result<(), String> {
             continue;
         }
 
-        remove_dir_all(directory).expect(format!("Cannot delete {}", directory).as_str());
+        remove_dir_all(directory).unwrap_or_else(|_| panic!("Cannot delete {}", directory));
     }
 
     Ok(())
@@ -482,11 +481,11 @@ Option:
             _ => return Err("Invalid language.".to_string()),
         },
         (c, libs) if c == "libs" || c == "libraries" =>
-            for lib in libs.split(",") {
+            for lib in libs.split(',') {
                 project.add_library(lib.to_string());
             },
         (c, dirs) if c == "lib_dirs" || c == "library_directories" =>
-            for dir in dirs.split(",") {
+            for dir in dirs.split(',') {
                 project.add_library_directories(dir.to_string());
             },
         ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
@@ -534,7 +533,7 @@ Option:
         return Err("No value given".to_string());
     }
     let data = args[0].as_str();
-    Ok(match data {
+    match data {
         "--help" => println!("{}", help),
         "name" => println!("{}", project.get_name().clone()),
         "lang" | "language" => println!("{}", project.get_language().to_string()),
@@ -553,7 +552,8 @@ Option:
             project.get_compiler().get_compiler_command(&Language::CXX).clone()
         ),
         _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
-    })
+    };
+    Ok(())
 }
 
 fn main() -> Result<(), String> {
@@ -581,7 +581,7 @@ fn main() -> Result<(), String> {
         toml::from_str(contents.as_str()).unwrap_or_default()
     };
 
-    Ok(match args[0].as_str() {
+    match args[0].as_str() {
         "build" => build(&args[1..], &mut project)?,
         "clean" => clean(&project)?,
         "get" => get_data(&args[1..], &project)?,
@@ -590,5 +590,6 @@ fn main() -> Result<(), String> {
         "run" => run(&args[1..], &mut project)?,
         "set" => set_data(&args[1..], &mut project)?,
         _ => help(Some(&args[0])),
-    })
+    };
+    Ok(())
 }

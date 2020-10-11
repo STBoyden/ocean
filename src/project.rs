@@ -109,7 +109,7 @@ impl Project {
             compiler_command
         );
 
-        let language = self.language.clone();
+        let language = self.language;
 
         self.get_compiler_mut().set_compiler_command(language, compiler_command);
     }
