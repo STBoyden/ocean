@@ -1,7 +1,10 @@
+#![allow(clippy::pedantic)]
+
+mod editors;
 mod language;
 mod project;
 
-use crate::{language::*, project::*};
+use crate::{editors::*, language::*, project::*};
 use std::{
     env,
     ffi::OsStr,
@@ -246,6 +249,9 @@ Options:
 }
 
 fn new(args: &[String], project: &mut Project) -> Result<(), String> {
+    let mut do_ccls = false;
+    let mut do_vscode = false;
+
     if args.len() > 0 {
         match args[0].as_str() {
             "--help" => {
@@ -257,11 +263,13 @@ This creates a new project with a generated Ocean.toml in a new directory with a
 Options:
     -C                  Creates a new C project (default).
     -CXX                Creates a new C++ project.
-    -b, --build-dir     Sets the build directory (default is \"./build\")
-    -s, --source-dir    Sets the source directory (default is \"./src\")
-    -o, --obj-dir       Sets the objects directory (default is \"./obj\")
-    -c, --compiler      Sets the compiler for the current project (default is gcc for C and g++ \
-                     for C++).
+    -b, --build-dir     Sets the build directory (default is \"./build\").
+    -s, --source-dir    Sets the source directory (default is \"./src\").
+    -o, --obj-dir       Sets the objects directory (default is \"./obj\").
+    -c, --compiler      Sets the compiler for the current project (default is gcc for C and g++ for C++).
+    --ccls              Outputs a .ccls file to be used with ccls. Allows a language server to be used with an editor \
+                     like Vim, for example.
+    --vscode            Outputs Visual Studio Code config files to make writing C/C++ easier.
             "
                 );
                 return Ok(());
@@ -314,6 +322,8 @@ Options:
                 args.get(index + 2)
                     .expect(format!("Did not specify custom {} compiler", lang).as_str()),
             ),
+            "--ccls" => do_ccls = true,
+            "--vscode" => do_vscode = true,
             _ => (),
         }
     }
@@ -360,7 +370,53 @@ int main() {
         .write_all(ignore_content.as_bytes())
         .expect("Could not write into .gitignore");
 
-    let _ = File::create(&format!("{}/.ccls", project.get_name())).expect("Could not create .ccls");
+    if do_ccls {
+        // TODO
+        let _ = CCLS::new();
+        let _ = File::create(&format!("{}/.ccls", project.get_name())).expect("Could not create .ccls");
+    }
+
+    if do_vscode {
+        let vscode = VsCode::new(project);
+        let config_dir = vscode.get_config_dir();
+        let configs = vscode.get_config();
+        create_dir_all(config_dir.clone()).expect("Could not create .vscode directory");
+
+        let mut properties = File::create(format!("{}/c_cpp_properties.json", config_dir.clone(),))
+            .expect("Could not create c_cpp_properties.json");
+
+        properties
+            .write_all(
+                configs
+                    .get("c_cpp_properties")
+                    .expect("Could not find c_cpp_properties in hashmap.")
+                    .as_bytes(),
+            )
+            .expect("Could not write to c_cpp_properties.json");
+
+        let mut launch =
+            File::create(format!("{}/launch.json", config_dir.clone())).expect("Could not write lauch.json");
+
+        launch
+            .write_all(
+                configs
+                    .get("launch")
+                    .expect("Could not find launch in hashmap")
+                    .as_bytes(),
+            )
+            .expect("Could not write to tasks.json");
+
+        let mut tasks = File::create(format!("{}/tasks.json", config_dir.clone())).expect("Could not write tasks.json");
+
+        tasks
+            .write_all(
+                configs
+                    .get("tasks")
+                    .expect("Could not find tasks in hashmap")
+                    .as_bytes(),
+            )
+            .expect("Could not write to tasks.json");
+    }
 
     println!(
         "Created a new {} project \"{}\"",
