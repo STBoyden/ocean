@@ -34,6 +34,7 @@ Create and manage C and C++ projects.
     build           Builds the current project
     clean           Cleans the current project's build artifacts
     get             Returns the values set in the Ocean.toml
+    set             Sets the values in side Ocean.toml
     help, --help    Shows this help text
     new             Creates a new C/C++ project in a new directory
     run             Runs the current project, builds if no build is present
