@@ -23,7 +23,7 @@ fn check_for_toml() -> Result<(), String> {
 
 fn help(argument: Option<&String>) {
     if argument.is_some() {
-        print!("Command \"{}\" not found.\n", argument.unwrap());
+        println!("Command \"{}\" not found.", argument.unwrap());
     }
     println!(
         "
@@ -89,7 +89,7 @@ Options:
             "
                 );
                 return Ok(());
-            },
+            }
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
             "-v" | "--verbose" => is_verbose = true,
@@ -117,16 +117,14 @@ Options:
     };
 
     if !Path::new(&object_path).exists() {
-        match create_dir_all(object_path.clone()) {
-            Err(e) => println!("Could not create directory \"{}\": {}", object_path, e),
-            _ => (),
+        if let Err(e) = create_dir_all(object_path.clone()) {
+            println!("Could not create directory \"{}\": {}", object_path, e)
         }
     }
 
     if !Path::new(&build_path).exists() {
-        match create_dir_all(build_path.clone()) {
-            Err(e) => println!("Could not create directory \"{}\": {}", build_path, e),
-            _ => (),
+        if let Err(e) = create_dir_all(build_path.clone()) {
+            println!("Could not create directory \"{}\": {}", build_path, e)
         }
     }
 
@@ -214,7 +212,7 @@ Options:
             "
                 );
                 return Ok(());
-            },
+            }
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
             // -v is handled by build()
@@ -273,7 +271,7 @@ Options:
             "
                 );
                 return Ok(());
-            },
+            }
             _ => {
                 let name = args[0].to_string();
                 if name != "" {
@@ -281,7 +279,7 @@ Options:
                 } else {
                     return Err("Did not specify project name".to_string());
                 }
-            },
+            }
         }
     } else {
         return Err("Did not specify project name".to_string());
@@ -291,14 +289,10 @@ Options:
         return Err("Cannot create a new project, Ocean.toml already exists in this directory.".to_string());
     }
 
-    if Path::new(&format!("{}/", project.get_name())).exists() {
-        let contents = read_dir(&format!("{}/", project.get_name()))
-            .unwrap()
-            .collect::<Vec<_>>();
-
-        if !contents.is_empty() {
-            return Err("Cannot create a new project, directory is not empty".to_string());
-        }
+    if Path::new(&format!("{}/", project.get_name())).exists()
+        && read_dir(&format!("{}/", project.get_name())).unwrap().next().is_some()
+    {
+        return Err("Cannot create a new project, directory is not empty".to_string());
     }
 
     for index in 0..args[1..].len() {
@@ -330,20 +324,22 @@ Options:
 
     let toml_content = toml::to_string(project).expect("Could not transform project data into Ocean.toml");
     let code_content = match project.get_language() {
-        Language::C =>
+        Language::C => {
             "#include <stdio.h>
 
 int main() {
     printf(\"Hello, world\\n\");
 }
-",
-        Language::CXX =>
+"
+        }
+        Language::CXX => {
             "#include <iostream>
 
 int main() {
     std::cout << \"Hello, world\" << std::endl;
 }
-",
+"
+        }
     };
     let ignore_content = "/build/\n/obj/";
 
@@ -480,17 +476,20 @@ Option:
             "c" => project.set_language(Language::C),
             _ => return Err("Invalid language.".to_string()),
         },
-        (c, libs) if c == "libs" || c == "libraries" =>
+        (c, libs) if c == "libs" || c == "libraries" => {
             for lib in libs.split(',') {
                 project.add_library(lib.to_string());
-            },
-        (c, dirs) if c == "lib_dirs" || c == "library_directories" =>
+            }
+        }
+        (c, dirs) if c == "lib_dirs" || c == "library_directories" => {
             for dir in dirs.split(',') {
                 project.add_library_directories(dir.to_string());
-            },
+            }
+        }
         ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
-        (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" =>
-            project.set_compiler(Language::CXX, compiler.clone()),
+        (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" => {
+            project.set_compiler(Language::CXX, compiler.clone())
+        }
         (c, compiler) if c == "compiler" || c == "current_compiler" => project.set_current_compiler(compiler.clone()),
         ("object_dir", dir) => project.get_directories_mut().set_objects_dir(dir.clone()),
         ("source_dir", dir) => project.get_directories_mut().set_source_dir(dir.clone()),
@@ -568,14 +567,10 @@ fn main() -> Result<(), String> {
     let mut project = {
         let mut contents = String::from("");
 
-        match File::open("Ocean.toml") {
-            Ok(mut f) => match f.read_to_string(&mut contents) {
-                Err(_) => {
-                    return Err("Could not read file".to_string());
-                },
-                _ => {},
-            },
-            _ => {},
+        if let Ok(mut f) = File::open("Ocean.toml") {
+            if f.read_to_string(&mut contents).is_err() {
+                return Err("Could not read file".to_string());
+            }
         }
 
         toml::from_str(contents.as_str()).unwrap_or_default()

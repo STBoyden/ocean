@@ -6,7 +6,7 @@ pub trait Editor<T> {
         let mut ret_path = String::new();
 
         match env::var_os("PATH") {
-            Some(path_var) =>
+            Some(path_var) => {
                 for path in env::split_paths(&path_var) {
                     if Path::new(
                         format!(
@@ -33,7 +33,8 @@ pub trait Editor<T> {
                     {
                         ret_path = path.to_str().unwrap().to_string();
                     }
-                },
+                }
+            }
             None => return Err("Cannot find PATH environment variable".to_string()),
         };
 
