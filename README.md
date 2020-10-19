@@ -132,6 +132,8 @@ Options:
     -s, --source-dir    Sets the source directory (default is "./src")
     -o, --obj-dir       Sets the objects directory (default is "./obj")
     -c, --compiler      Sets the compiler for the current project (default is gcc for C and g++ for C++).
+    --ccls              Outputs a .ccls file to be used with ccls. Allows a language server to be used with an editor like Vim, for example.
+    --vscode            Outputs Visual Studio Code config files to make writing C/C++ easier.
 ```
 
 #### `run`
