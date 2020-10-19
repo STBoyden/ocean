@@ -25,22 +25,18 @@ fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, St
     }
 
     let cwd = current_dir().unwrap();
-    let path = path.unwrap_or(cwd.to_str().unwrap());
+    let path = path.unwrap_or_else(|| cwd.to_str().unwrap());
 
     if Path::new(format!("{}/Ocean.toml", path).as_str()).exists() {
         set_current_dir(path).unwrap();
         return Ok({
             let mut contents = String::from("");
 
-            match File::open("Ocean.toml") {
-                Ok(mut f) => match f.read_to_string(&mut contents) {
-                    Err(_) => {
-                        return Err("Could not read file".to_string());
-                    },
-                    _ => {},
-                },
-                _ => {},
-            }
+            if let Ok(mut f) = File::open("Ocean.toml") {
+                if f.read_to_string(&mut contents).is_err() {
+                    return Err("Could not read file".to_string());
+                }
+            };
 
             toml::from_str(contents.as_str()).unwrap()
         });
@@ -51,7 +47,7 @@ fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, St
 
 fn help(argument: Option<&String>) {
     if argument.is_some() {
-        print!("Command \"{}\" not found.\n", argument.unwrap());
+        println!("Command \"{}\" not found.", argument.unwrap());
     }
     println!(
         "
@@ -142,16 +138,14 @@ Options:
     };
 
     if !Path::new(&object_path).exists() {
-        match create_dir_all(object_path.clone()) {
-            Err(e) => println!("Could not create directory \"{}\": {}", object_path, e),
-            _ => (),
+        if let Err(e) = create_dir_all(object_path.clone()) {
+            println!("Could not create directory \"{}\": {}", object_path, e);
         }
     }
 
     if !Path::new(&build_path).exists() {
-        match create_dir_all(build_path.clone()) {
-            Err(e) => println!("Could not create directory \"{}\": {}", build_path, e),
-            _ => (),
+        if let Err(e) = create_dir_all(build_path.clone()) {
+            println!("Could not create directory \"{}\": {}", build_path, e);
         }
     }
 
@@ -319,14 +313,10 @@ Options:
         return Err("Cannot create a new project, Ocean.toml already exists in this directory.".to_string());
     }
 
-    if Path::new(&format!("{}/", project.get_name())).exists() {
-        let contents = read_dir(&format!("{}/", project.get_name()))
-            .unwrap()
-            .collect::<Vec<_>>();
-
-        if !contents.is_empty() {
-            return Err("Cannot create a new project, directory is not empty".to_string());
-        }
+    if Path::new(&format!("{}/", project.get_name())).exists()
+        && read_dir(&format!("{}/", project.get_name())).unwrap().next().is_none()
+    {
+        return Err("Cannot create a new project, directory is not empty".to_string());
     }
 
     for index in 0..args[1..].len() {

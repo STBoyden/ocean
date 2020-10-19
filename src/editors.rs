@@ -17,19 +17,16 @@ pub trait Editor<T> {
                         .as_str(),
                     )
                     .is_file()
-                        && env::consts::OS == "windows"
-                    {
-                        ret_path = path.to_str().unwrap().to_string();
-                    } else if Path::new(
-                        format!(
-                            "{}/{}",
-                            path.to_str().unwrap(),
-                            project.get_compiler().get_compiler_command(project.get_language())
+                        || Path::new(
+                            format!(
+                                "{}/{}",
+                                path.to_str().unwrap(),
+                                project.get_compiler().get_compiler_command(project.get_language())
+                            )
+                            .as_str(),
                         )
-                        .as_str(),
-                    )
-                    .is_file()
-                        && cfg!(unix)
+                        .is_file()
+                            && cfg!(unix)
                     {
                         ret_path = path.to_str().unwrap().to_string();
                     }
