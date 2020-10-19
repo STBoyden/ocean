@@ -169,6 +169,7 @@ CMake or Premake and is not intended to.
 ## To Do
 
 - [ ] Use `cc` crate instead of manually calling the compiler commands.
+    - Won't work for creating executables but might be able to used for creating libraries.
 - [ ] Use `clap` or `structopt` to parse arguments.
 - [ ] Work on incremental builds:
     - Look into Go's build cache.
