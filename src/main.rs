@@ -7,6 +7,7 @@ mod project;
 use crate::{editors::*, language::*, project::*};
 use std::{
     env,
+    env::{current_dir, set_current_dir},
     ffi::OsStr,
     fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
     io::prelude::*,
@@ -14,11 +15,38 @@ use std::{
     process::Command,
 };
 
-fn check_for_toml() -> Result<(), String> {
-    if Path::new("./Ocean.toml").exists() {
-        return Ok(());
+fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, String> {
+    let search_count = search_count.unwrap_or(0);
+
+    if search_count > 4 {
+        return Err(
+            "Could not find Ocean.toml, please make sure that you are in a valid project directory.".to_string(),
+        );
     }
-    Err("Could not find Ocean.toml, please make sure that you are in a valid project directory.".to_string())
+
+    let cwd = current_dir().unwrap();
+    let path = path.unwrap_or(cwd.to_str().unwrap());
+
+    if Path::new(format!("{}/Ocean.toml", path).as_str()).exists() {
+        set_current_dir(path).unwrap();
+        return Ok({
+            let mut contents = String::from("");
+
+            match File::open("Ocean.toml") {
+                Ok(mut f) => match f.read_to_string(&mut contents) {
+                    Err(_) => {
+                        return Err("Could not read file".to_string());
+                    },
+                    _ => {},
+                },
+                _ => {},
+            }
+
+            toml::from_str(contents.as_str()).unwrap()
+        });
+    }
+
+    get_toml(Some(format!("{}/..", path).as_str()), Some(search_count + 1))
 }
 
 fn help(argument: Option<&String>) {
@@ -46,20 +74,13 @@ fn get_extension_from_filename(filename: &str) -> Option<&str> {
     Path::new(filename).extension().and_then(OsStr::to_str)
 }
 
-fn build(args: &[String], project: &mut Project) -> Result<(), String> {
-    check_for_toml()?;
+fn build(args: &[String]) -> Result<(), String> {
+    let project = get_toml(None, None)?;
 
     let mut build_mode = "debug";
     let mut is_verbose = false;
 
-    let executable_name = {
-        if cfg!(windows) {
-            format!("{}.exe", project.get_name())
-        } else {
-            project.get_name().clone()
-        }
-        .replace(" ", "_")
-    };
+    let executable_name = format!("{}{}", project.get_name(), env::consts::EXE_SUFFIX);
 
     for directory in project.get_directories().get_all_dirs() {
         if !Path::new(directory).exists() {
@@ -105,6 +126,10 @@ Options:
     let source_files = read_dir(project.get_directories().get_source_dir().to_string()).unwrap();
     for file in source_files {
         let file_name = file.unwrap().path().clone();
+
+        if Path::new(&file_name).is_dir() {
+            continue;
+        }
 
         if get_extension_from_filename(file_name.to_str().unwrap()).unwrap() == file_extension {
             compilable.push(file_name);
@@ -195,7 +220,7 @@ Options:
     Ok(())
 }
 
-fn run(args: &[String], project: &mut Project) -> Result<(), String> {
+fn run(args: &[String]) -> Result<(), String> {
     let mut build_mode = "debug";
 
     if !args.is_empty() {
@@ -222,7 +247,8 @@ Options:
         }
     }
 
-    build(args, project)?;
+    build(args)?;
+    let project = get_toml(None, None)?;
 
     let build_path = format!("{}/{}", project.get_directories().get_build_dir(), build_mode);
 
@@ -248,7 +274,9 @@ Options:
     Ok(())
 }
 
-fn new(args: &[String], project: &mut Project) -> Result<(), String> {
+fn new(args: &[String]) -> Result<(), String> {
+    let mut project = Project::default();
+
     let mut do_ccls = false;
     let mut do_vscode = false;
 
@@ -328,7 +356,7 @@ Options:
         }
     }
 
-    let toml_content = toml::to_string(project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = toml::to_string(&project).expect("Could not transform project data into Ocean.toml");
     let code_content = match project.get_language() {
         Language::C =>
             "#include <stdio.h>
@@ -377,7 +405,7 @@ int main() {
     }
 
     if do_vscode {
-        let vscode = VsCode::new(project);
+        let vscode = VsCode::new(&project);
         let config_dir = vscode.get_config_dir();
         let configs = vscode.get_config();
         create_dir_all(config_dir.clone()).expect("Could not create .vscode directory");
@@ -426,22 +454,22 @@ int main() {
     Ok(())
 }
 
-fn clean(project: &Project) -> Result<(), String> {
-    check_for_toml()?;
+fn clean() -> Result<(), String> {
+    let project = get_toml(None, None)?;
 
     for directory in project.get_directories().get_all_dirs() {
         if directory == project.get_directories().get_source_dir() {
             continue;
         }
 
-        remove_dir_all(directory).unwrap_or_else(|_| panic!("Cannot delete {}", directory));
+        remove_dir_all(directory).unwrap_or_else(|_| ());
     }
 
     Ok(())
 }
 
-fn set_data(args: &[String], project: &mut Project) -> Result<(), String> {
-    check_for_toml()?;
+fn set_data(args: &[String]) -> Result<(), String> {
+    let mut project = get_toml(None, None)?;
 
     let help = "
 Usage: ocean set [KEY]
@@ -500,15 +528,15 @@ Option:
 
     remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
-    let toml_content = toml::to_string(project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = toml::to_string(&project).expect("Could not transform project data into Ocean.toml");
     file.write_all(toml_content.as_bytes())
         .expect("Could not write to Ocean.toml");
 
     Ok(())
 }
 
-fn get_data(args: &[String], project: &Project) -> Result<(), String> {
-    check_for_toml()?;
+fn get_data(args: &[String]) -> Result<(), String> {
+    let project = get_toml(None, None)?;
 
     let help = "
 Usage: ocean get [KEY]
@@ -522,8 +550,7 @@ Option:
     compiler, current_compiler      Prints the current compiler being used for the project.
     lang, language                  Prints the current language of the project.
     lib_dirs, library_directories   Prints the library directories that would be searched by the linker.
-    libs, libraries                 Prints the libraries being compiled with the project.
-    name                            Prints the name of the project.
+    libs, libraries                 Prints the libraries being compiled with the project.  name                            Prints the name of the project.
     object_dir                      Prints the object output directory.
     source_dir                      Prints the source code directory.
     ";
@@ -558,37 +585,22 @@ Option:
 
 fn main() -> Result<(), String> {
     let mut args: Vec<String> = env::args().collect();
-    if args.len() > 1 {
-        args = args[1..].to_vec();
-    } else {
+
+    if args.is_empty() {
         help(None);
         return Err("No arguments were specified".to_string());
+    } else {
+        args = args[1..].to_vec();
     }
 
-    let mut project = {
-        let mut contents = String::from("");
-
-        match File::open("Ocean.toml") {
-            Ok(mut f) => match f.read_to_string(&mut contents) {
-                Err(_) => {
-                    return Err("Could not read file".to_string());
-                },
-                _ => {},
-            },
-            _ => {},
-        }
-
-        toml::from_str(contents.as_str()).unwrap_or_default()
-    };
-
     match args[0].as_str() {
-        "build" => build(&args[1..], &mut project)?,
-        "clean" => clean(&project)?,
-        "get" => get_data(&args[1..], &project)?,
+        "build" => build(&args[1..])?,
+        "clean" => clean()?,
+        "get" => get_data(&args[1..])?,
         "help" | "--help" => help(None),
-        "new" => new(&args[1..], &mut project)?,
-        "run" => run(&args[1..], &mut project)?,
-        "set" => set_data(&args[1..], &mut project)?,
+        "new" => new(&args[1..])?,
+        "run" => run(&args[1..])?,
+        "set" => set_data(&args[1..])?,
         _ => help(Some(&args[0])),
     };
     Ok(())
