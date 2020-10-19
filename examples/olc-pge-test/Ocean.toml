@@ -1,0 +1,13 @@
+name = "olc-pge-test"
+language = "CXX"
+libraries = ["X11", "GL", "pthread", "png", "stdc++fs"]
+library_directories = []
+
+[directories]
+object_dir = "./obj"
+source_dir = "./src"
+build_dir = "./build"
+
+[compiler]
+C = "gcc"
+CXX = "g++"
