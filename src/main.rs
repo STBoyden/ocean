@@ -575,7 +575,7 @@ Option:
 fn main() -> Result<(), String> {
     let mut args: Vec<String> = env::args().collect();
 
-    if args.is_empty() {
+    if args[1..].is_empty() {
         help(None);
         return Err("No arguments were specified".to_string());
     } else {
