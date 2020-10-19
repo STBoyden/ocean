@@ -53,7 +53,7 @@ Make sure to use `ocean --help` if you're not sure how to use this application.
 - Easy setup - all the available options that can be changed in Ocean.toml can
   also be changed through the commands.
 - Small project preparation time - can get your C/C++ project up and running in
-  only a few seconds.
+  only a few seconds (with optional config arguments for multiple editors of your choice).
 
 ## Command help
 ```
