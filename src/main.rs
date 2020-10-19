@@ -134,7 +134,7 @@ Options:
 
     let flags = match build_mode {
         "release" => "-Wall -Wextra -O3",
-        _ => "-Wall -Wextra -Og",
+        _ => "-g -ggdb -Wall -Wextra -Og",
     };
 
     if !Path::new(&object_path).exists() {
@@ -164,7 +164,8 @@ Options:
             c.arg("-v");
         }
 
-        c.arg("-c")
+        c.args(&flags.split(' ').collect::<Vec<&str>>())
+            .arg("-c")
             .arg(file.to_str().unwrap())
             .spawn()
             .expect("Could not execute compiler")
@@ -194,9 +195,7 @@ Options:
         c.arg(obj);
     }
 
-    c.args(&flags.split(' ').collect::<Vec<&str>>())
-        .arg("-o")
-        .arg(format!("{}/{}", build_path, executable_name));
+    c.arg("-o").arg(format!("{}/{}", build_path, executable_name));
 
     for library_directory in project.get_library_dirs() {
         c.arg(format!("-L{}", library_directory));
