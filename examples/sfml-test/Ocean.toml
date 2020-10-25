@@ -1,0 +1,13 @@
+name = "sfml-test"
+language = "CXX"
+libraries = ["sfml-graphics", "sfml-window", "sfml-system"]
+library_directories = []
+
+[directories]
+build_dir = "./build"
+source_dir = "./src"
+object_dir = "./obj"
+
+[compiler]
+CXX = "g++"
+C = "gcc"
