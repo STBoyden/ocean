@@ -164,19 +164,28 @@ Options:
             c.arg("-v");
         }
 
-        c.args(&flags.split(' ').collect::<Vec<&str>>())
+        if let Err(e) = c
+            .args(&flags.split(' ').collect::<Vec<&str>>())
             .arg("-c")
             .arg(file.to_str().unwrap())
             .spawn()
             .expect("Could not execute compiler")
             .wait()
-            .unwrap();
+        {
+            return Err(format!("Compiler command returned with error code: {}", e));
+        };
 
-        rename(
+        if let Err(e) = rename(
             format!("{}.o", file.file_stem().unwrap().to_str().unwrap()),
             format!("{}/{}.o", object_path, file.file_stem().unwrap().to_str().unwrap()),
-        )
-        .expect("Could not move object file");
+        ) {
+            return Err(format!(
+                "Cannot move object file: {}. Did the project compile properly?",
+                e
+            ));
+        }
+
+        println!("Compiled {}.o", file.file_stem().unwrap().to_str().unwrap());
 
         object_files.push(format!(
             "{}/{}.o",
@@ -205,10 +214,9 @@ Options:
         c.arg(format!("-l{}", library));
     }
 
-    c.spawn()
-        .expect("Could not compile objects to final executable")
-        .wait()
-        .unwrap();
+    if let Err(e) = c.spawn().expect("Could not find compiler executable").wait() {
+        return Err(format!("Compiler command returned with error code: {}", e));
+    };
 
     Ok(())
 }
