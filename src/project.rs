@@ -1,4 +1,4 @@
-use crate::language::*;
+use crate::{compiler::*, language::*};
 use serde_derive::*;
 use std::{collections::hash_map::Values, collections::HashMap};
 
@@ -6,11 +6,16 @@ use std::{collections::hash_map::Values, collections::HashMap};
 pub struct DirectoryHashMap(HashMap<String, String>);
 
 #[derive(Deserialize, Serialize)]
-pub struct Project {
+struct Inner {
     name: String,
     language: Language,
     libraries: Vec<String>,
     library_directories: Vec<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct Project {
+    project: Inner,
     directories: DirectoryHashMap,
     compiler: Compiler,
 }
@@ -52,33 +57,24 @@ impl DirectoryHashMap {
 
 impl Project {
     pub fn get_compiler(&self) -> &Compiler { &self.compiler }
-
     pub fn get_compiler_mut(&mut self) -> &mut Compiler { &mut self.compiler }
-
     pub fn get_directories(&self) -> &DirectoryHashMap { &self.directories }
-
     pub fn get_directories_mut(&mut self) -> &mut DirectoryHashMap { &mut self.directories }
-
-    pub fn get_language(&self) -> &Language { &self.language }
-
-    pub fn get_libraries(&self) -> &Vec<String> { &self.libraries }
-
-    pub fn get_library_dirs(&self) -> &Vec<String> { &self.library_directories }
-
-    pub fn get_name(&self) -> &String { &self.name }
-
-    pub fn set_language(&mut self, lang: Language) { self.language = lang; }
-
-    pub fn set_name(&mut self, name: String) { self.name = name; }
+    pub fn get_language(&self) -> &Language { &self.project.language }
+    pub fn get_libraries(&self) -> &Vec<String> { &self.project.libraries }
+    pub fn get_library_dirs(&self) -> &Vec<String> { &self.project.library_directories }
+    pub fn get_name(&self) -> &String { &self.project.name }
+    pub fn set_language(&mut self, lang: Language) { self.project.language = lang; }
+    pub fn set_name(&mut self, name: String) { self.project.name = name; }
 
     pub fn add_library(&mut self, lib_path: String) {
         println!("Added the '{}' library", lib_path);
-        self.libraries.push(lib_path);
+        self.project.libraries.push(lib_path);
     }
 
     pub fn add_library_directories(&mut self, lib_dir: String) {
         println!("Added '{}' to the library directories.", lib_dir);
-        self.library_directories.push(lib_dir);
+        self.project.library_directories.push(lib_dir);
     }
 
     pub fn set_compiler(&mut self, language: Language, compiler_command: String) {
@@ -93,23 +89,31 @@ impl Project {
     pub fn set_current_compiler(&mut self, compiler_command: String) {
         println!(
             "Set compiler command for {} to '{}'",
-            self.language.as_string(),
+            self.project.language.as_string(),
             compiler_command
         );
 
-        let language = self.language;
+        let language = self.project.language;
 
         self.get_compiler_mut().set_compiler_command(language, compiler_command);
     }
 }
 
-impl Default for Project {
+impl Default for Inner {
     fn default() -> Self {
         Self {
             name: "Ocean Project".to_string(),
             language: Language::C,
             libraries: Vec::new(),
             library_directories: Vec::new(),
+        }
+    }
+}
+
+impl Default for Project {
+    fn default() -> Self {
+        Self {
+            project: Inner::default(),
             directories: DirectoryHashMap::new(),
             compiler: Compiler::new(),
         }

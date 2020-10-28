@@ -1,5 +1,6 @@
 #![allow(clippy::pedantic)]
 
+mod compiler;
 mod editors;
 mod language;
 mod project;
