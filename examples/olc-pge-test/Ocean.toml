@@ -1,13 +1,17 @@
+[project]
 name = "olc-pge-test"
 language = "CXX"
 libraries = ["X11", "GL", "pthread", "png", "stdc++fs"]
 library_directories = []
 
 [directories]
-object_dir = "./obj"
 source_dir = "./src"
 build_dir = "./build"
+object_dir = "./obj"
+[compiler.c]
+command = "gcc"
+flags = []
 
-[compiler]
-C = "gcc"
-CXX = "g++"
+[compiler.cxx]
+command = "g++"
+flags = []
