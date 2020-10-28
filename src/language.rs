@@ -1,4 +1,5 @@
 use serde_derive::*;
+use std::fmt;
 
 #[derive(Deserialize, Serialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub enum Language {
@@ -9,6 +10,8 @@ pub enum Language {
 impl Language {
     pub fn as_string(&self) -> String {
         match self {
+            Language::C => "C".to_string(),
+            Language::CXX => "CXX".to_string(),
         }
     }
 
