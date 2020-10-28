@@ -80,6 +80,7 @@ Options:
     -d, --debug     Builds the current project in debug mode (this is turned on by default)
     -r, --release   Builds the current project in release mode
     -v, --verbose   Makes the compiler output verbose.
+    -f, --flags     Passes custom flags to the compiler.
 ```
 
 #### `get`
@@ -93,9 +94,10 @@ Option:
     c++_compiler, cxx_compiler      Prints the compiler being used for the C++ project.
     c_compiler                      Prints the compiler being used for the C project.
     compiler, current_compiler      Prints the current compiler being used for the project.
+    flags                           Prints the flags of the current compiler.
     lang, language                  Prints the current language of the project.
     lib_dirs, library_directories   Prints the library directories that would be searched by the linker.
-    libs, libraries                 Prints the libraries being compiled with the project.
+    libs, libraries                 Prints the libraries being compiled with the project.  
     name                            Prints the name of the project.
     object_dir                      Prints the object output directory.
     source_dir                      Prints the source code directory.
@@ -112,6 +114,7 @@ Option:
     c++_compiler [COMPILER], cxx_compiler [COMPILER]    Set the compiler being used for the C++ project.
     c_compiler [COMPILER]                               Sets the compiler being used for the C project.
     compiler [COMPILER], current_compiler [COMPILER]    Sets the current compiler being used for the project.
+    flags [FLAGS]                                       Sets the flags of the current compiler, split by commas.
     lang [LANG], language [LANG]                        Set the current language of the project.
     lib_dirs [DIRS], library_directories [DIRS]         Sets the library directories that would be searched by the linker, split by commas.
     libs [LIBS], libraries [LIBS]                       Sets the libraries being compiled with the project, split by commas.
@@ -146,6 +149,7 @@ Options:
     -d, --debug     Runs the current project in debug mode (this is turned on by default)
     -r, --release   Runs the current project in release mode
     -v, --verbose   Makes the compiler output verbose.
+    -f, --flags     Passes custom flags to the compiler.
 ```
 
 
