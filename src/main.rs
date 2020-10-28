@@ -579,6 +579,9 @@ Option:
             "{}",
             project.get_compiler().get_compiler_command(&Language::CXX).clone()
         ),
+        "build_dir" => println!("{}", project.get_directories().get_build_dir()),
+        "source_dir" => println!("{}", project.get_directories().get_source_dir()),
+        "object_dir" => println!("{}", project.get_directories().get_objects_dir()),
         _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
     };
     Ok(())
