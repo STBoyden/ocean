@@ -30,35 +30,23 @@ impl DirectoryHashMap {
     }
 
     pub fn get_all_dirs(&self) -> Values<'_, String, String> { self.0.values() }
-
     pub fn get_build_dir(&self) -> &String { &self.0["build_dir"] }
-
     pub fn get_objects_dir(&self) -> &String { &self.0["object_dir"] }
-
     pub fn get_source_dir(&self) -> &String { &self.0["source_dir"] }
 
     pub fn set_build_dir(&mut self, dir: String) {
-        self.0
-            .remove_entry("build_dir")
-            .expect("Could not find \"build_dir\" in keys");
-
-        self.0.insert("build_dir".to_string(), dir);
+        let build_dir = self.0.get_mut("build_dir").expect("Could not find build_dir key.");
+        *build_dir = dir;
     }
 
     pub fn set_source_dir(&mut self, dir: String) {
-        self.0
-            .remove_entry("source_dir")
-            .expect("Could not find \"source_dir\" in keys");
-
-        self.0.insert("source_dir".to_string(), dir);
+        let source_dir = self.0.get_mut("source_dir").expect("Could not find source_dir key.");
+        *source_dir = dir;
     }
 
     pub fn set_objects_dir(&mut self, dir: String) {
-        self.0
-            .remove_entry("object_dir")
-            .expect("Could not find \"object_dir\" in keys");
-
-        self.0.insert("object_dir".to_string(), dir);
+        let object_dir = self.0.get_mut("object_dir").expect("Could not find object_dir key.");
+        *object_dir = dir;
     }
 }
 
