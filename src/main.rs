@@ -540,12 +540,12 @@ Option:
             ("flags", flags) => {
                 let flags_vec = {
                     let mut v = vec![];
-                    let flags_vec_str: Vec<&str> = flags.split(",").collect();
+                    let flags_vec_str: Vec<&str> = flags.split(',').collect();
                     flags_vec_str.iter().for_each(|f| v.push(f.to_string()));
                     v
                 };
 
-                let lang = project.get_language().clone();
+                let lang = *project.get_language();
                 project.get_compiler_mut().set_compiler_flags(lang, flags_vec);
             },
             _ => return Err("Incorrect data key.".to_string()),
