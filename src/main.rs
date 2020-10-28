@@ -75,6 +75,7 @@ fn build(args: &[String]) -> Result<(), String> {
 
     let mut build_mode = "debug";
     let mut is_verbose = false;
+    let mut compiler_flags = String::from("");
 
     let executable_name = format!("{}{}", project.get_name(), env::consts::EXE_SUFFIX);
 
@@ -90,12 +91,12 @@ fn build(args: &[String]) -> Result<(), String> {
     let file_extension = project.get_language().get_extension();
     let compiler = project.get_compiler().get_compiler_command(project.get_language());
 
-    if !args.is_empty() {
-        match args[0].as_str() {
+    for (index, arg) in args.iter().enumerate() {
+        match arg.as_str() {
             "--help" => {
                 println!(
                     "
-Usage: ocean build [OPTIONS]
+Usage: ocean build [OPTIONS] [-f [FLAGS]]
 
 By default, this builds projects in debug mode.
 
@@ -103,6 +104,7 @@ Options:
     -d, --debug     Builds the current project in debug mode (this is turned on by default)
     -r, --release   Builds the current project in release mode
     -v, --verbose   Makes the compiler output verbose.
+    -f, --flags     Passes custom flags to the compiler.
             "
                 );
                 return Ok(());
@@ -110,6 +112,7 @@ Options:
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
             "-v" | "--verbose" => is_verbose = true,
+            "-f" | "--flags" => compiler_flags = args[index as usize..].to_vec().join(" "),
             _ => (),
         }
     }
@@ -132,10 +135,11 @@ Options:
         }
     }
 
-    let flags = match build_mode {
-        "release" => "-Wall -Wextra -O3",
-        _ => "-g -ggdb -Wall -Wextra -Og",
+    let mut flags = match build_mode {
+        "release" => format!("-Wall -Wextra -O3 {}", compiler_flags),
+        _ => format!("-g -ggdb -Wall -Wextra -Og {}", compiler_flags),
     };
+    flags = flags.trim_end().to_string();
 
     if !Path::new(&object_path).exists() {
         if let Err(e) = create_dir_all(object_path.clone()) {
@@ -237,13 +241,13 @@ Options:
     -d, --debug     Runs the current project in debug mode (this is turned on by default)
     -r, --release   Runs the current project in release mode
     -v, --verbose   Makes the compiler output verbose.
+    -f, --flags     Passes custom flags to the compiler.
             "
                 );
                 return Ok(());
             },
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
-            // -v is handled by build()
             _ => (),
         }
     }
