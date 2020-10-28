@@ -136,11 +136,19 @@ Options:
         }
     }
 
-    let mut flags = match build_mode {
-        "release" => format!("-Wall -Wextra -O3 {}", compiler_flags),
-        _ => format!("-g -ggdb -Wall -Wextra -Og {}", compiler_flags),
+    let lang_flags = project
+        .get_compiler()
+        .get_compiler_flags(project.get_language())
+        .join(" ");
+
+    let flags = match build_mode {
+        "release" => format!("-Wall -Wextra -O3 {} {}", lang_flags.trim(), compiler_flags.trim()),
+        _ => format!(
+            "-g -ggdb -Wall -Wextra -Og {} {}",
+            lang_flags.trim(),
+            compiler_flags.trim()
+        ),
     };
-    flags = flags.trim_end().to_string();
 
     if !Path::new(&object_path).exists() {
         if let Err(e) = create_dir_all(object_path.clone()) {
@@ -350,7 +358,8 @@ Options:
             "-c" | "--compiler" => project.get_compiler_mut().set_compiler_command(
                 lang,
                 args.get(index + 2)
-                    .unwrap_or_else(|| panic!("Did not specify custom {} compiler", lang)),
+                    .unwrap_or_else(|| panic!("Did not specify custom {} compiler", lang))
+                    .clone(),
             ),
             "--ccls" => do_ccls = true,
             "--vscode" => do_vscode = true,
@@ -483,6 +492,7 @@ Option:
     c++_compiler [COMPILER], cxx_compiler [COMPILER]    Set the compiler being used for the C++ project.
     c_compiler [COMPILER]                               Sets the compiler being used for the C project.
     compiler [COMPILER], current_compiler [COMPILER]    Sets the current compiler being used for the project.
+    flags [FLAGS]                                       Sets the flags of the current compiler, split by commas.
     lang [LANG], language [LANG]                        Set the current language of the project.
     lib_dirs [DIRS], library_directories [DIRS]         Sets the library directories that would be searched by the \
                 linker, split by commas.
@@ -503,31 +513,46 @@ Option:
         return Err("No value supplied for given key".to_string());
     }
 
-    match (args[0].as_str(), &args[1]) {
-        ("name", n) => project.set_name(n.clone()),
-        (c, lang) if c == "lang" || c == "language" => match lang.to_lowercase().as_str() {
-            "c++" | "cxx" => project.set_language(Language::CXX),
-            "c" => project.set_language(Language::C),
-            _ => return Err("Invalid language.".to_string()),
-        },
-        (c, libs) if c == "libs" || c == "libraries" =>
-            for lib in libs.split(',') {
-                project.add_library(lib.to_string());
+    if !args[1..].is_empty() {
+        match (args[0].as_str(), &args[1]) {
+            ("name", n) => project.set_name(n.clone()),
+            (c, lang) if c == "lang" || c == "language" => match lang.to_lowercase().as_str() {
+                "c++" | "cxx" => project.set_language(Language::CXX),
+                "c" => project.set_language(Language::C),
+                _ => return Err("Invalid language.".to_string()),
             },
-        (c, dirs) if c == "lib_dirs" || c == "library_directories" =>
-            for dir in dirs.split(',') {
-                project.add_library_directories(dir.to_string());
-            },
-        ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
-        (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" =>
-            project.set_compiler(Language::CXX, compiler.clone()),
-        (c, compiler) if c == "compiler" || c == "current_compiler" => project.set_current_compiler(compiler.clone()),
-        ("object_dir", dir) => project.get_directories_mut().set_objects_dir(dir.clone()),
-        ("source_dir", dir) => project.get_directories_mut().set_source_dir(dir.clone()),
-        ("build_dir", dir) => project.get_directories_mut().set_build_dir(dir.clone()),
-        _ => return Err("Incorrect data key.".to_string()),
-    }
+            (c, libs) if c == "libs" || c == "libraries" =>
+                for lib in libs.split(',') {
+                    project.add_library(lib.to_string());
+                },
+            (c, dirs) if c == "lib_dirs" || c == "library_directories" =>
+                for dir in dirs.split(',') {
+                    project.add_library_directories(dir.to_string());
+                },
+            ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
+            (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" =>
+                project.set_compiler(Language::CXX, compiler.clone()),
+            (c, compiler) if c == "compiler" || c == "current_compiler" =>
+                project.set_current_compiler(compiler.clone()),
+            ("object_dir", dir) => project.get_directories_mut().set_objects_dir(dir.clone()),
+            ("source_dir", dir) => project.get_directories_mut().set_source_dir(dir.clone()),
+            ("build_dir", dir) => project.get_directories_mut().set_build_dir(dir.clone()),
+            ("flags", flags) => {
+                let flags_vec = {
+                    let mut v = vec![];
+                    let flags_vec_str: Vec<&str> = flags.split(",").collect();
+                    flags_vec_str.iter().for_each(|f| v.push(f.to_string()));
+                    v
+                };
 
+                let lang = project.get_language().clone();
+                project.get_compiler_mut().set_compiler_flags(lang, flags_vec);
+            },
+            _ => return Err("Incorrect data key.".to_string()),
+        }
+    } else {
+        return Err("No data provided to set key with".to_string());
+    }
     remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
     let toml_content = toml::to_string(&project).expect("Could not transform project data into Ocean.toml");
@@ -550,9 +575,11 @@ Option:
     c++_compiler, cxx_compiler      Prints the compiler being used for the C++ project.
     c_compiler                      Prints the compiler being used for the C project.
     compiler, current_compiler      Prints the current compiler being used for the project.
+    flags                           Prints the flags of the current compiler.
     lang, language                  Prints the current language of the project.
     lib_dirs, library_directories   Prints the library directories that would be searched by the linker.
-    libs, libraries                 Prints the libraries being compiled with the project.  name                            Prints the name of the project.
+    libs, libraries                 Prints the libraries being compiled with the project.  
+    name                            Prints the name of the project.
     object_dir                      Prints the object output directory.
     source_dir                      Prints the source code directory.
     ";
@@ -583,6 +610,10 @@ Option:
         "build_dir" => println!("{}", project.get_directories().get_build_dir()),
         "source_dir" => println!("{}", project.get_directories().get_source_dir()),
         "object_dir" => println!("{}", project.get_directories().get_objects_dir()),
+        "flags" => println!(
+            "{:#?}",
+            project.get_compiler().get_compiler_flags(project.get_language())
+        ),
         _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
     };
     Ok(())
