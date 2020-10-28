@@ -141,13 +141,22 @@ Options:
         .get_compiler_flags(project.get_language())
         .join(" ");
 
+    let flag_arr = [lang_flags.trim(), compiler_flags.trim()].join(" ");
+    let extra_flags = flag_arr.trim();
+
     let flags = match build_mode {
-        "release" => format!("-Wall -Wextra -O3 {} {}", lang_flags.trim(), compiler_flags.trim()),
-        _ => format!(
-            "-g -ggdb -Wall -Wextra -Og {} {}",
-            lang_flags.trim(),
-            compiler_flags.trim()
-        ),
+        "release" =>
+            if extra_flags != "" {
+                format!("-Wall -Wextra -O3 {}", extra_flags)
+            } else {
+                String::from("-Wall -Wextra -O3")
+            },
+        _ =>
+            if extra_flags != "" {
+                format!("-g -ggdb -Wall -Wextra -Og {}", extra_flags)
+            } else {
+                String::from("-g -ggdb -Wall -Wextra -Og")
+            },
     };
 
     if !Path::new(&object_path).exists() {
