@@ -177,5 +177,5 @@ CMake or Premake and is not intended to.
 - [ ] Use `clap` or `structopt` to parse arguments.
 - [ ] Work on incremental builds:
     - Look into Go's build cache.
-- [ ] Provide examples of Ocean usage with varying degree of project size.
+- [ ] Provide examples of Ocean usage with varying degree of project size (in progress).
 
