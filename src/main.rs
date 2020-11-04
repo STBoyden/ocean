@@ -18,7 +18,7 @@ use std::{
 };
 
 fn pretty_toml(toml_content: String) -> String {
-    let mut split: Vec<&str> = toml_content.split("\n").collect();
+    let mut split: Vec<&str> = toml_content.split('\n').collect();
 
     for i in (0..split.len() - 1).rev() {
         let below = *match split.get(i + 1) {
@@ -26,7 +26,7 @@ fn pretty_toml(toml_content: String) -> String {
             None => continue,
         };
 
-        if split[i] != "" && below.starts_with("[") {
+        if split[i] != "" && below.starts_with('[') {
             split.insert(i + 1, "")
         }
     }
@@ -549,7 +549,8 @@ fn set_data(args: &[String]) -> Result<(), String> {
     let help = "
 Usage: ocean set [KEY]
 
-This set values inside the Ocean project file to a value specified by the user.
+This sets values inside the Ocean project file to a value specified by the user. When provided with a platform name, \
+                it allows the user to set specific keys for a specified platform.
 
 Option:
     build_dir [DIRECTORY]                               Sets the build directory for the project.
@@ -633,7 +634,8 @@ fn get_data(args: &[String]) -> Result<(), String> {
     let help = "
 Usage: ocean get [KEY]
 
-This gets the current values inside the Ocean project file related to a data key entered by the user.
+This gets the current values inside the Ocean project file related to a data key entered by the user. When given a \
+                platform name, it will get specific keys for a specified platform.
 
 Option:
     build_dir                       Prints the build directory for the current project.
@@ -699,7 +701,7 @@ fn set_data_platform(args: &[String], platform_name: String) -> Result<(), Strin
     };
 
     let help = "
-Usage: ocean [PLATFORM] set [KEY]
+Usage: ocean set [PLATFORM] [KEY]
 
 This set values inside the Ocean project file to a value for a specified platform.
 
@@ -777,6 +779,74 @@ Option:
     Ok(())
 }
 
+fn get_data_platform(args: &[String], platform_name: String) -> Result<(), String> {
+    let project = get_toml(None, None)?;
+
+    let plat_ops = if let Some(plats) = project.get_platform() {
+        match platform_name.as_str() {
+            "linux" =>
+                if let Some(linux) = plats.linux.clone() {
+                    linux
+                } else {
+                    return Err("Could not find any keys for Linux".to_string());
+                },
+            "osx" =>
+                if let Some(osx) = plats.osx.clone() {
+                    osx
+                } else {
+                    return Err("Could not find any keys for OSX".to_string());
+                },
+            "windows" =>
+                if let Some(windows) = plats.windows.clone() {
+                    windows
+                } else {
+                    return Err("Could not find any keys for Windows".to_string());
+                },
+            _ => return Err("Could not find the specified platform".to_string()),
+        }
+    } else {
+        return Err("Could not find platform".to_string());
+    };
+
+    let help = "
+Usage: ocean get [PLATFORM] [KEY]
+
+This get values inside the Ocean project file to a value for a specified platform.
+
+Option:
+    c++_compiler , cxx_compiler    Get the compiler being used for the C++ project.
+    c_compiler                     Get the compiler being used for the C project.
+    compiler, current_compiler     Get the current compiler being used for the project.
+    flags                          Get the flags of the current compiler, split by commas.
+    lib_dirs, library_directories  Get the library directories that would be searched by the linker, split by commas.
+    libs, libraries                Get the libraries being compiled with the project, split by commas.
+    ";
+
+    let data = args[0].as_str();
+
+    match data {
+        "--help" => println!("{}", help),
+        "libs" | "libraries" => println!("{:#?}", plat_ops.get_libraries()),
+        "lib_dirs" | "library_directories" => println!("{:#?}", plat_ops.get_library_dirs()),
+        "compiler" | "current_compiler" => println!(
+            "{}",
+            plat_ops.get_compiler().get_compiler_command(project.get_language())
+        ),
+        "c_compiler" => println!("{}", plat_ops.get_compiler().get_compiler_command(&Language::C).clone()),
+        "c++_compiler" | "cxx_compiler" => println!(
+            "{}",
+            plat_ops.get_compiler().get_compiler_command(&Language::CXX).clone()
+        ),
+        "flags" => println!(
+            "{:#?}",
+            plat_ops.get_compiler().get_compiler_flags(project.get_language())
+        ),
+        _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
+    };
+
+    Ok(())
+}
+
 fn main() -> Result<(), String> {
     const PLATFORMS: [&str; 3] = ["linux", "osx", "windows"];
 
@@ -792,7 +862,12 @@ fn main() -> Result<(), String> {
     match args[0].as_str() {
         "build" => build(&args[1..])?,
         "clean" => clean()?,
-        "get" => get_data(&args[1..])?,
+        "get" =>
+            if PLATFORMS.contains(&args[1].as_str()) {
+                get_data_platform(&args[2..], args[1].clone())?;
+            } else {
+                get_data(&args[1..])?;
+            },
         "help" | "--help" => help(None),
         "new" => new(&args[1..])?,
         "run" => run(&args[1..])?,
