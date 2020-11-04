@@ -3,9 +3,10 @@
 mod compiler;
 mod editors;
 mod language;
+mod platform;
 mod project;
 
-use crate::{editors::*, language::*, project::*};
+use crate::{editors::*, language::*, platform::*, project::*};
 use std::{
     env,
     env::{current_dir, set_current_dir},
@@ -15,6 +16,23 @@ use std::{
     path::Path,
     process::Command,
 };
+
+fn pretty_toml(toml_content: String) -> String {
+    let mut split: Vec<&str> = toml_content.split("\n").collect();
+
+    for i in (0..split.len() - 1).rev() {
+        let below = *match split.get(i + 1) {
+            Some(v) => v,
+            None => continue,
+        };
+
+        if split[i] != "" && below.starts_with("[") {
+            split.insert(i + 1, "")
+        }
+    }
+
+    split.join("\n")
+}
 
 fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, String> {
     let search_count = search_count.unwrap_or(0);
@@ -136,10 +154,46 @@ Options:
         }
     }
 
-    let lang_flags = project
-        .get_compiler()
-        .get_compiler_flags(project.get_language())
-        .join(" ");
+    let lang_flags = if let Some(platform) = project.get_platform().clone() {
+        let default = project
+            .get_compiler()
+            .get_compiler_flags(project.get_language())
+            .clone();
+
+        match env::consts::OS {
+            "linux" =>
+                if let Some(linux) = platform.linux {
+                    linux
+                        .get_compiler()
+                        .get_compiler_flags(project.get_language())
+                        .to_owned()
+                } else {
+                    default
+                },
+            "osx" =>
+                if let Some(osx) = platform.osx {
+                    osx.get_compiler().get_compiler_flags(project.get_language()).to_owned()
+                } else {
+                    default
+                },
+            "windows" =>
+                if let Some(windows) = platform.windows {
+                    windows
+                        .get_compiler()
+                        .get_compiler_flags(project.get_language())
+                        .to_owned()
+                } else {
+                    default
+                },
+            _ => return Err("Unsupported operating system".to_string()),
+        }
+        .join(" ")
+    } else {
+        project
+            .get_compiler()
+            .get_compiler_flags(project.get_language())
+            .join(" ")
+    };
 
     let flag_arr = [lang_flags.trim(), compiler_flags.trim()].join(" ");
     let extra_flags = flag_arr.trim();
@@ -376,7 +430,8 @@ Options:
         }
     }
 
-    let toml_content = toml::to_string(&project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = pretty_toml(toml_content);
     let code_content = match project.get_language() {
         Language::C =>
             "#include <stdio.h>
@@ -564,7 +619,8 @@ Option:
     }
     remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
-    let toml_content = toml::to_string(&project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = pretty_toml(toml_content);
     file.write_all(toml_content.as_bytes())
         .expect("Could not write to Ocean.toml");
 
@@ -628,7 +684,102 @@ Option:
     Ok(())
 }
 
+fn set_data_platform(args: &[String], platform_name: String) -> Result<(), String> {
+    let mut project = get_toml(None, None)?;
+
+    let mut platform = if let Some(plats) = project.get_platform_mut() {
+        plats.clone()
+    } else {
+        Platforms::default()
+    };
+
+    let mut plat_ops = PlatformOptions {
+        platform_name: platform_name.clone(),
+        ..PlatformOptions::default()
+    };
+
+    let help = "
+Usage: ocean [PLATFORM] set [KEY]
+
+This set values inside the Ocean project file to a value for a specified platform.
+
+Option:
+    c++_compiler [COMPILER], cxx_compiler [COMPILER]    Set the compiler being used for the C++ project.
+    c_compiler [COMPILER]                               Sets the compiler being used for the C project.
+    compiler [COMPILER], current_compiler [COMPILER]    Sets the current compiler being used for the project.
+    flags [FLAGS]                                       Sets the flags of the current compiler, split by commas.
+    lib_dirs [DIRS], library_directories [DIRS]         Sets the library directories that would be searched by the \
+                linker, split by commas.
+    libs [LIBS], libraries [LIBS]                       Sets the libraries being compiled with the project, split by \
+                commas.
+    ";
+
+    if args.is_empty() {
+        println!("{}", help);
+        return Err("No key given".to_string());
+    } else if args[0] == "--help" {
+        println!("{}", help);
+        return Ok(());
+    } else if args.len() > 2 {
+        return Err("No value supplied for given key".to_string());
+    }
+
+    if !args[1..].is_empty() {
+        match (args[0].as_str(), &args[1]) {
+            (c, libs) if c == "libs" || c == "libraries" =>
+                for lib in libs.split(',') {
+                    plat_ops.add_library(lib.to_string());
+                },
+            (c, dirs) if c == "lib_dirs" || c == "library_directories" =>
+                for dir in dirs.split(',') {
+                    plat_ops.add_library_directories(dir.to_string());
+                },
+            ("c_compiler", compiler) => project.set_compiler(Language::C, compiler.clone()),
+            (c, compiler) if c == "c++_compiler" || c == "cxx_compiler" =>
+                plat_ops.set_compiler(Language::CXX, compiler.clone()),
+            (c, compiler) if c == "compiler" || c == "current_compiler" =>
+                plat_ops.set_compiler(*project.get_language(), compiler.clone()),
+            ("flags", flags) => {
+                let flags_vec = {
+                    let mut v = vec![];
+                    let flags_vec_str: Vec<&str> = flags.split(',').collect();
+                    flags_vec_str.iter().for_each(|f| v.push(f.to_string()));
+                    v
+                };
+
+                let lang = *project.get_language();
+                plat_ops.get_compiler_mut().set_compiler_flags(lang, flags_vec);
+            },
+            _ => return Err("Incorrect data key.".to_string()),
+        }
+    } else {
+        return Err("No data provided to set key with".to_string());
+    }
+
+    *project.get_platform_mut() = Some({
+        match platform_name.as_str() {
+            "linux" => platform.linux = Some(plat_ops),
+            "osx" => platform.osx = Some(plat_ops),
+            "windows" => platform.windows = Some(plat_ops),
+            _ => return Err("Invalid platform".to_string()),
+        };
+
+        platform
+    });
+
+    remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
+    let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
+    let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
+    let toml_content = pretty_toml(toml_content);
+    file.write_all(toml_content.as_bytes())
+        .expect("Could not write to Ocean.toml");
+
+    Ok(())
+}
+
 fn main() -> Result<(), String> {
+    const PLATFORMS: [&str; 3] = ["linux", "osx", "windows"];
+
     let mut args: Vec<String> = env::args().collect();
 
     if args[1..].is_empty() {
@@ -645,7 +796,12 @@ fn main() -> Result<(), String> {
         "help" | "--help" => help(None),
         "new" => new(&args[1..])?,
         "run" => run(&args[1..])?,
-        "set" => set_data(&args[1..])?,
+        "set" =>
+            if PLATFORMS.contains(&args[1].as_str()) {
+                set_data_platform(&args[2..], args[1].clone())?;
+            } else {
+                set_data(&args[1..])?;
+            },
         _ => help(Some(&args[0])),
     };
     Ok(())
