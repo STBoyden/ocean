@@ -1,4 +1,4 @@
-use crate::Project;
+use crate::project::Project;
 use std::{collections::HashMap, env, path::Path};
 
 pub trait Editor<T> {
