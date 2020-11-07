@@ -1,4 +1,4 @@
-use crate::{compiler::*, language::*};
+use crate::{compiler::*, language::*, platform::*};
 use serde_derive::*;
 use std::{collections::hash_map::Values, collections::HashMap};
 
@@ -18,6 +18,7 @@ pub struct Project {
     project: Inner,
     directories: DirectoryHashMap,
     compiler: Compiler,
+    platforms: Option<Platforms>,
 }
 
 impl DirectoryHashMap {
@@ -64,6 +65,8 @@ impl Project {
     pub fn get_libraries(&self) -> &Vec<String> { &self.project.libraries }
     pub fn get_library_dirs(&self) -> &Vec<String> { &self.project.library_directories }
     pub fn get_name(&self) -> &String { &self.project.name }
+    pub fn get_platform(&self) -> &Option<Platforms> { &self.platforms }
+    pub fn get_platform_mut(&mut self) -> &mut Option<Platforms> { &mut self.platforms }
     pub fn set_language(&mut self, lang: Language) { self.project.language = lang; }
     pub fn set_name(&mut self, name: String) { self.project.name = name; }
 
@@ -73,7 +76,7 @@ impl Project {
     }
 
     pub fn add_library_directories(&mut self, lib_dir: String) {
-        println!("Added '{}' to the library directories.", lib_dir);
+        println!("Added '{}' to the library directories", lib_dir);
         self.project.library_directories.push(lib_dir);
     }
 
@@ -104,8 +107,8 @@ impl Default for Inner {
         Self {
             name: "Ocean Project".to_string(),
             language: Language::C,
-            libraries: Vec::new(),
-            library_directories: Vec::new(),
+            libraries: Vec::default(),
+            library_directories: Vec::default(),
         }
     }
 }
@@ -115,7 +118,8 @@ impl Default for Project {
         Self {
             project: Inner::default(),
             directories: DirectoryHashMap::new(),
-            compiler: Compiler::new(),
+            compiler: Compiler::default(),
+            platforms: None,
         }
     }
 }

@@ -1,13 +1,13 @@
 use crate::language::*;
 use serde_derive::*;
 
-#[derive(Deserialize, Serialize)]
-pub(crate) struct CompilerOptions {
+#[derive(Deserialize, Serialize, Clone)]
+pub struct CompilerOptions {
     command: String,
     flags: Vec<String>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Compiler {
     c: CompilerOptions,
     cxx: CompilerOptions,
@@ -52,6 +52,19 @@ impl Compiler {
         match lang {
             Language::C => self.c.flags = flags,
             Language::CXX => self.cxx.flags = flags,
+        }
+    }
+}
+
+impl Default for Compiler {
+    fn default() -> Self { Self::new() }
+}
+
+impl From<[CompilerOptions; 2]> for Compiler {
+    fn from(co: [CompilerOptions; 2]) -> Self {
+        Self {
+            cxx: co[0].clone(),
+            c: co[1].clone(),
         }
     }
 }
