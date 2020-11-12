@@ -1,4 +1,5 @@
-<img src="banner.svg" style="display: block; margin: 0 auto" />
+<img src="banner.svg" style="display: block; margin: 0 auto; width: 75%;" />
+
 <h3 style="text-align: center">
     <i>
         Disclaimer: this is a personal project that I spend my free time on.
@@ -180,5 +181,3 @@ CMake or Premake and is not intended to.
     - Look into Go's build cache.
 - [ ] Provide examples of Ocean usage with varying degree of project size (in progress).
 
-<br>
-<img src="logo.svg" style="width: 100px; display: block; margin: 0 auto" />
