@@ -291,9 +291,10 @@ Options:
 
 pub fn run(args: &[String]) -> Result<(), String> {
     let mut build_mode = "debug";
+    let mut program_args = vec![];
 
-    if !args.is_empty() {
-        match args[0].as_str() {
+    for (index, arg) in args.iter().enumerate() {
+        match arg.as_str() {
             "--help" => {
                 println!(
                     "
@@ -312,11 +313,13 @@ Options:
             },
             "-r" | "--release" => build_mode = "release",
             "-d" | "--debug" => build_mode = "debug",
-            _ => (),
+            "--" => program_args = args[index + 1..].to_vec(),
+            _ => (), // -v and -f are handled by the build function
         }
     }
 
     build(args)?;
+
     let project = get_toml(None, None)?;
 
     let build_path = format!("{}/{}", project.get_directories().get_build_dir(), build_mode);
@@ -332,12 +335,17 @@ Options:
 
     let executable_path = format!("{}/{}", build_path, executable_name);
 
+    println!("{:?}", program_args);
+
     if Path::new(&executable_path).exists() {
         Command::new(format!("./{}", executable_path))
+            .args(program_args)
             .spawn()
             .expect("Could not start application")
             .wait()
             .expect("Application exited unexpectedly");
+    } else {
+        return Err("Could not find the \"{}\" executable. Did the project compiler properly?".to_string());
     }
 
     Ok(())
