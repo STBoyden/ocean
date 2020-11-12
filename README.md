@@ -1,4 +1,4 @@
-<h1 style="text-align: center"> Ocean - C/C++ Project Manager/Build System</h1>
+<img src="banner.svg" style="display: block; margin: 0 auto" />
 <h3 style="text-align: center">
     <i>
         Disclaimer: this is a personal project that I spend my free time on.
@@ -11,6 +11,7 @@ similar to that of Cargo's.
 
 By default, Ocean will use `gcc` to compile C and C++ source files, outputting
 the executables to `build/{mode}/{project_name}`.
+
 
 ## Table of contents
 1. [How to install](#how-to-install)
@@ -179,3 +180,5 @@ CMake or Premake and is not intended to.
     - Look into Go's build cache.
 - [ ] Provide examples of Ocean usage with varying degree of project size (in progress).
 
+<br>
+<img src="logo.svg" style="width: 100px; display: block; margin: 0 auto" />

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="267.98239"
+   height="205.35139"
+   viewBox="0 0 267.98238 205.3514"
+   enable-background="new 0 0 280.247 224.691"
+   xml:space="preserve"
+   sodipodi:docname="OCEAN wave motif.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   inkscape:export-filename="/home/samuel/Downloads/OCEAN wave motif.png"
+   inkscape:export-xdpi="299.19"
+   inkscape:export-ydpi="299.19"><metadata
+   id="metadata38"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs36" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="862"
+   inkscape:window-height="1056"
+   id="namedview34"
+   showgrid="false"
+   inkscape:zoom="3.734017"
+   inkscape:cx="121.3646"
+   inkscape:cy="95.986981"
+   inkscape:window-x="1056"
+   inkscape:window-y="22"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="Layer_1" />
+<g
+   id="XMLID_7_"
+   inkscape:export-xdpi="299.19"
+   inkscape:export-ydpi="299.19"
+   transform="translate(-7.7435952,-11.798609)">
+	
+		<linearGradient
+   id="XMLID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="465.02051"
+   y1="78.237297"
+   x2="544.35498"
+   y2="211.3813"
+   gradientTransform="matrix(-1,0,0,1,655.5059,0)">
+		<stop
+   offset="0"
+   style="stop-color:#29A5DE"
+   id="stop2" />
+		<stop
+   offset="1"
+   style="stop-color:#293E8D"
+   id="stop4" />
+	</linearGradient>
+	<path
+   id="XMLID_12_"
+   fill="url(#XMLID_2_)"
+   d="m 7.773,104.362 c 0.209,-2.798 2.27,-5.545 4.734,-6.506 1.23,-0.48 2.562,-0.515 3.812,0.114 1.205,0.603 2.15,1.719 3.455,2.055 3.729,0.959 5.482,-4.386 5.719,-8.229 0.982,-15.97 6.719,-31.617 16.289,-44.438 2.984,-4 8.506,-8.018 12.418,-4.92 1.104,0.871 1.828,2.205 3.068,2.867 2.568,1.376 5.525,-0.758 7.783,-2.6 19.361,-15.809 46.186,-17.826 71.153,-18.965 3.008,-0.137 6.123,-0.254 8.923,0.868 3.666,1.468 5.369,6.519 0.312,7.218 -5.793,0.802 -11.671,0.754 -17.491,1.151 -1.332,0.091 -2.781,0.224 -3.572,1.536 -0.719,1.193 -0.533,2.721 0.336,3.809 1.748,2.188 4.544,2.341 7.129,2.492 8.732,0.508 61.201,5.65 50.14,23.716 -1.975,3.225 -6.416,4.132 -10.098,3.265 -3.682,-0.865 -6.861,-3.098 -10.139,-4.984 -11.141,-6.411 -24.385,-9.09 -37.142,-7.516 13.052,0.643 24.449,8.744 34.439,17.166 9.99,8.421 19.854,17.737 32.301,21.705 3.803,1.212 7.83,1.918 11.27,3.941 3.438,2.023 6.236,5.874 5.486,9.793 -1.268,6.613 -10.441,7.664 -16.914,5.804 -24.281,-6.972 -40.199,-30.962 -63.703,-40.229 -17.18,-6.772 -37.617,-4.602 -52.988,5.634 -15.373,10.233 -25.261,28.249 -25.64,46.713 -0.273,13.398 4.229,26.691 11.734,37.795 7.207,10.668 17.369,19.553 29.433,24.041 15.783,5.873 33.415,3.895 49.736,-0.25 16.322,-4.145 32.154,-10.369 48.799,-12.918 16.645,-2.549 34.859,-0.951 48.305,9.186 -12.846,-12.535 -32.725,-13.357 -49.457,-19.854 -2.633,-1.023 -5.365,-2.32 -6.469,-5.141 -0.516,-1.316 -0.416,-2.83 0.4,-3.984 1.336,-1.887 3.672,-1.773 5.732,-1.539 19.086,2.18 37.838,8.502 53.658,19.398 15.822,10.896 28.594,26.484 35.002,44.594 -17.807,-17.211 -42.625,-26.945 -67.385,-26.43 -38.135,0.793 -73.923,24.52 -111.441,24.127 -3.668,-0.037 -5.426,-4.514 -2.75,-7.021 l 0.068,-0.064 c -2.334,2.186 -13.76,-0.215 -16.885,-0.809 C 70.96,205.744 64.655,203.59 58.875,200.641 48.881,195.543 40.168,187.627 34.268,178.079 22.686,159.341 21.561,135.854 11.629,116.19 9.736,112.438 7.458,108.556 7.773,104.362 Z"
+   style="fill:url(#XMLID_2_)" />
+	
+		<linearGradient
+   id="XMLID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="604.74017"
+   y1="-5.0151"
+   x2="684.07532"
+   y2="128.12981"
+   gradientTransform="matrix(-1,0,0,1,655.5059,0)">
+		<stop
+   offset="0"
+   style="stop-color:#29A5DE"
+   id="stop8" />
+		<stop
+   offset="1"
+   style="stop-color:#293E8D"
+   id="stop10" />
+	</linearGradient>
+	<path
+   id="XMLID_11_"
+   fill="url(#XMLID_3_)"
+   d="M 44.312,26.583 C 40.382,30.024 35.298,31.806 30.9,34.625 24.265,38.878 19.351,45.419 15.853,52.479 12.621,58.997 11.539,66.97 8.181,73.12 7.29,64.667 8.736,54.833 10.57,46.559 c 2.008,-9.041 5.842,-17.888 12.338,-24.488 4.693,-4.77 17.297,-12.83 24.432,-9.48 4.958,2.327 -0.184,11.502 -3.028,13.992 z"
+   style="fill:url(#XMLID_3_)" />
+	
+		<linearGradient
+   id="XMLID_4_"
+   gradientUnits="userSpaceOnUse"
+   x1="461.31351"
+   y1="80.445801"
+   x2="540.65033"
+   y2="213.5936"
+   gradientTransform="matrix(-1,0,0,1,655.5059,0)">
+		<stop
+   offset="0"
+   style="stop-color:#29A5DE"
+   id="stop14" />
+		<stop
+   offset="1"
+   style="stop-color:#293E8D"
+   id="stop16" />
+	</linearGradient>
+	<path
+   id="XMLID_10_"
+   fill="url(#XMLID_4_)"
+   d="m 209.837,77.723 c -1.797,0.727 -3.895,0.338 -5.596,-0.593 -1.699,-0.931 -3.076,-2.347 -4.393,-3.771 -2.721,-2.936 -10.754,-9.568 -8.914,-14.168 1.328,-3.324 5.107,-2.789 7.986,-2.068 6.241,1.56 22.933,15.736 10.917,20.6 z"
+   style="fill:url(#XMLID_4_)" />
+	
+		<linearGradient
+   id="XMLID_5_"
+   gradientUnits="userSpaceOnUse"
+   x1="505.67871"
+   y1="54.0098"
+   x2="585.01062"
+   y2="187.1494"
+   gradientTransform="matrix(-1,0,0,1,655.5059,0)">
+		<stop
+   offset="0"
+   style="stop-color:#29A5DE"
+   id="stop20" />
+		<stop
+   offset="1"
+   style="stop-color:#293E8D"
+   id="stop22" />
+	</linearGradient>
+	<path
+   id="XMLID_9_"
+   fill="url(#XMLID_5_)"
+   d="m 165.636,35.023 c -1.676,-0.683 -3.012,-1.985 -4.23,-3.321 -2.127,-2.332 -4.104,-5.789 -2.393,-8.442 l -0.17,-0.274 c 4.527,-1.663 10.125,0.474 12.393,4.73 1.143,2.143 1.328,5.12 -0.486,6.732 -1.353,1.201 -3.442,1.26 -5.114,0.575 z"
+   style="fill:url(#XMLID_5_)" />
+	
+		<linearGradient
+   id="XMLID_6_"
+   gradientUnits="userSpaceOnUse"
+   x1="504.30569"
+   y1="54.830601"
+   x2="583.64008"
+   y2="187.9745"
+   gradientTransform="matrix(-1,0,0,1,655.5059,0)">
+		<stop
+   offset="0"
+   style="stop-color:#29A5DE"
+   id="stop26" />
+		<stop
+   offset="1"
+   style="stop-color:#293E8D"
+   id="stop28" />
+	</linearGradient>
+	<path
+   id="XMLID_8_"
+   fill="url(#XMLID_6_)"
+   d="M 95.714,180.43 C 84.956,177.592 74.929,171.539 68.081,162.768 55.656,146.844 55.759,122.385 68.319,106.569 80.88,90.752 104.682,85.113 123.011,93.615 c 3.105,1.449 10.118,10.68 2.348,9.273 -7.053,-1.277 -12.624,-1.027 -19.608,-1.027 -7.553,1.794 -14.619,5.915 -19.549,11.955 -10.682,13.092 -10.918,33.266 -1.508,47.297 9.41,14.033 27.307,21.449 44.082,19.422 -10.851,2.462 -22.3,2.731 -33.062,-0.105 z"
+   style="fill:url(#XMLID_6_)" />
+</g>
+</svg>
