@@ -1,5 +1,6 @@
 #![allow(clippy::pedantic)]
 
+mod cache;
 mod commands;
 mod compiler;
 mod editors;

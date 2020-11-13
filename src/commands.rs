@@ -1,4 +1,4 @@
-use crate::{editors::*, language::*, platform::*, project::*};
+use crate::{cache::Cache, editors::*, language::*, platform::*, project::*};
 use std::{
     env,
     env::{current_dir, set_current_dir},
@@ -90,6 +90,24 @@ pub fn build(args: &[String]) -> Result<(), String> {
 
     let executable_name = format!("{}{}", project.get_name(), env::consts::EXE_SUFFIX);
 
+    let lock_file_path = "Ocean.lock";
+    let lock_file = Path::new(&lock_file_path);
+
+    let mut cache: Cache = if lock_file.exists() {
+        let mut lock_file = File::open(lock_file).expect("Could not open Ocean.lock");
+        let mut buffer = vec![];
+
+        lock_file.read_to_end(&mut buffer).expect("Could not read Ocean.lock");
+        toml::from_str(
+            String::from_utf8(buffer)
+                .expect("Could not read Ocean.lock content as valid UTF-8")
+                .as_str(),
+        )
+        .unwrap_or_else(|_| Cache::new(&project))
+    } else {
+        Cache::new(&project)
+    };
+
     for directory in project.get_directories().get_all_dirs() {
         if !Path::new(directory).exists() {
             match create_dir_all(directory) {
@@ -143,6 +161,23 @@ Options:
 
         if get_extension_from_filename(file_name.to_str().unwrap()).unwrap() == file_extension {
             compilable.push(file_name);
+        }
+    }
+
+    if lock_file.exists() {
+        let changed = cache.get_changed(&project)?;
+        if !changed.is_empty() {
+            compilable = compilable
+                .iter_mut()
+                .enumerate()
+                .filter(|(i, x)| **x == changed[*i])
+                .map(|x| x.1.clone())
+                .collect();
+        } else if !Path::new(&format!("{}/{}", build_path, executable_name)).exists() {
+            println!("Binary missing. Compiling anyway.");
+        } else {
+            println!("No compilation needed.");
+            return Ok(());
         }
     }
 
@@ -286,6 +321,15 @@ Options:
         return Err(format!("Compiler command returned with error code: {}", e));
     };
 
+    let mut lock = File::create(lock_file).expect("Could not create/truncate Ocean.lock");
+    cache.update_cache(&project)?;
+    lock.write_all(
+        toml::to_string_pretty(&cache)
+            .expect("Could not convert into Cache")
+            .as_bytes(),
+    )
+    .expect("Could not write to Ocean.lock");
+
     Ok(())
 }
 
@@ -334,8 +378,6 @@ Options:
     };
 
     let executable_path = format!("{}/{}", build_path, executable_name);
-
-    println!("{:?}", program_args);
 
     if Path::new(&executable_path).exists() {
         Command::new(format!("./{}", executable_path))
@@ -448,7 +490,7 @@ int main() {
 }
 ",
     };
-    let ignore_content = "/build/\n/obj/";
+    let ignore_content = "/build/\n/obj/\nOcean.lock";
 
     create_dir_all(&format!("{}/src", project.get_name())).expect("Could not create project and source directory");
     let mut file = File::create(&format!("{}/Ocean.toml", project.get_name())).expect("Could not create Ocean.toml");
@@ -537,6 +579,7 @@ pub fn clean() -> Result<(), String> {
             continue;
         }
 
+        remove_file("Ocean.lock").unwrap_or_else(|_| ());
         remove_dir_all(directory).unwrap_or_else(|_| ());
     }
 
