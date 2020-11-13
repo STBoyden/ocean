@@ -1,6 +1,6 @@
 use crate::{compiler::*, language::*, platform::*};
 use serde_derive::*;
-use std::{collections::hash_map::Values, collections::HashMap};
+use std::{collections::hash_map::Values, collections::HashMap, env};
 
 #[derive(Deserialize, Serialize)]
 pub struct DirectoryHashMap(HashMap<String, String>);
@@ -62,8 +62,41 @@ impl Project {
     pub fn get_directories(&self) -> &DirectoryHashMap { &self.directories }
     pub fn get_directories_mut(&mut self) -> &mut DirectoryHashMap { &mut self.directories }
     pub fn get_language(&self) -> &Language { &self.project.language }
-    pub fn get_libraries(&self) -> &Vec<String> { &self.project.libraries }
-    pub fn get_library_dirs(&self) -> &Vec<String> { &self.project.library_directories }
+
+    pub fn get_libraries(&self) -> &Vec<String> {
+        if let Some(platform) = &self.platforms {
+            if let Some(pl) = match env::consts::OS {
+                "linux" => &platform.linux,
+                "osx" => &platform.osx,
+                "windows" => &platform.windows,
+                _ => &None,
+            } {
+                return &pl.libraries;
+            } else {
+                return &self.project.libraries;
+            }
+        } else {
+            &self.project.libraries
+        }
+    }
+
+    pub fn get_library_dirs(&self) -> &Vec<String> {
+        if let Some(platform) = &self.platforms {
+            if let Some(pl) = match env::consts::OS {
+                "linux" => &platform.linux,
+                "osx" => &platform.osx,
+                "windows" => &platform.windows,
+                _ => &None,
+            } {
+                return &pl.libraries;
+            } else {
+                return &self.project.library_directories;
+            }
+        } else {
+            &self.project.library_directories
+        }
+    }
+
     pub fn get_name(&self) -> &String { &self.project.name }
     pub fn get_platform(&self) -> &Option<Platforms> { &self.platforms }
     pub fn get_platform_mut(&mut self) -> &mut Option<Platforms> { &mut self.platforms }
