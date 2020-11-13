@@ -29,11 +29,11 @@ the executables to `build/{mode}/{project_name}`.
     - [`run`](#run)
 1. [FAQ](#faq)
     1. [Are you making a package
-       manager?](#q%3A-are-you-making-a-package-manager%3F)
+       manager?](#q-are-you-making-a-package-manager)
     1. [How often do you plan on working on
-       Ocean?](#q%3A-how-often-do-you-plan-on-working-on-ocean%3F)
+       Ocean?](#q-how-often-do-you-plan-on-working-on-ocean)
     1. [Why use this over CMake or
-       Premake?](#q%3A-why-use-this-over-cmake%2C-premake-(etc.)%3F)
+       Premake?](#q-why-use-this-over-cmake-premake-etc)
 1. [To Do](#to-do)
 
 ## Requirements
