@@ -661,7 +661,6 @@ Option:
     } else {
         return Err("No data provided to set key with".to_string());
     }
-    remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
     let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
     let toml_content = pretty_toml(toml_content);
@@ -812,7 +811,6 @@ Option:
         platform
     });
 
-    remove_file("./Ocean.toml").expect("Couldn't delete Ocean.toml");
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
     let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
     let toml_content = pretty_toml(toml_content);
