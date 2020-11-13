@@ -1,4 +1,5 @@
 <img src="banner.svg" style="display: block; margin: 0 auto; width: 75%;" />
+<h4 style="text-align: center"><i>A build system/project manager for C/C++</i></h4>
 
 <h3 style="text-align: center">
     <i>
@@ -17,6 +18,7 @@ the executables to `build/{mode}/{project_name}`.
 ## Table of contents
 1. [How to install](#how-to-install)
 1. [Requirements](#requirements)
+1. [Supported compilers](#supported-compilers)
 1. [Features](#features)
 1. [Command help](#command-help)
     - [`build`](#build)
@@ -32,13 +34,17 @@ the executables to `build/{mode}/{project_name}`.
        Ocean?](#q%3A-how-often-do-you-plan-on-working-on-ocean%3F)
     1. [Why use this over CMake or
        Premake?](#q%3A-why-use-this-over-cmake%2C-premake-(etc.)%3F)
-1. [ToDo](#to-do)
+1. [To Do](#to-do)
 
 ## Requirements
 - `rustc >= 1.46.0`
-- `gcc` (techincally optional if you specify another compiler).
-- `g++` (techincally optional if you specify another compiler).
+- One of the [supported compilers](#supported-compilers)
 
+## Supported compilers
+Officially supported compilers:
+
+- GNU C Compiler (GCC)
+- Clang
 
 ## How to install
 
