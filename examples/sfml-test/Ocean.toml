@@ -1,17 +1,22 @@
 [project]
-name = "sfml-test"
-language = "CXX"
-libraries = ["sfml-graphics", "sfml-window", "sfml-system"]
+name = 'sfml-test'
+language = 'CXX'
+libraries = [
+    'sfml-graphics',
+    'sfml-window',
+    'sfml-system',
+]
 library_directories = []
 
 [directories]
-source_dir = "./src"
-build_dir = "./build"
-object_dir = "./obj"
+build_dir = './build'
+object_dir = './obj'
+source_dir = './src'
+
 [compiler.c]
-command = "gcc"
+command = 'gcc'
 flags = []
 
 [compiler.cxx]
-command = "g++"
+command = 'g++'
 flags = []

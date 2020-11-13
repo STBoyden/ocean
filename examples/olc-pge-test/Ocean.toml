@@ -1,17 +1,58 @@
 [project]
-name = "olc-pge-test"
-language = "CXX"
-libraries = ["X11", "GL", "pthread", "png", "stdc++fs"]
+name = 'olc-pge-test'
+language = 'CXX'
+libraries = []
 library_directories = []
 
 [directories]
-source_dir = "./src"
-build_dir = "./build"
-object_dir = "./obj"
+object_dir = './obj'
+build_dir = './build'
+source_dir = './src'
+
 [compiler.c]
-command = "gcc"
+command = 'gcc'
 flags = []
 
 [compiler.cxx]
-command = "g++"
+command = 'g++'
+flags = []
+
+[platforms.linux]
+platform_name = 'linux'
+libraries = [
+    'X11',
+    'GL',
+    'pthread',
+    'png',
+    'stdc++fs',
+]
+library_directories = []
+
+[platforms.linux.compiler.c]
+command = 'gcc'
+flags = []
+
+[platforms.linux.compiler.cxx]
+command = 'g++'
+flags = []
+
+[platforms.windows]
+platform_name = 'windows'
+libraries = [
+    'user32',
+    'gdi32',
+    'opengl32',
+    'gdiplus',
+    'Shlwapi',
+    'dwmapi',
+    'stdc++fs',
+]
+library_directories = []
+
+[platforms.windows.compiler.c]
+command = 'gcc'
+flags = []
+
+[platforms.windows.compiler.cxx]
+command = 'g++'
 flags = []
