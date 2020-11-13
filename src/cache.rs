@@ -20,7 +20,7 @@ pub struct Cache {
 }
 
 impl Cache {
-    fn get_dir_contents<'a>(path: PathBuf) -> Option<Vec<PathBuf>> {
+    fn get_dir_contents(path: PathBuf) -> Option<Vec<PathBuf>> {
         let path = Path::new(&path);
 
         if path.is_dir() {
@@ -37,9 +37,9 @@ impl Cache {
                 }
             }
 
-            return Some(contents);
+            Some(contents)
         } else {
-            return None;
+            None
         }
     }
 
