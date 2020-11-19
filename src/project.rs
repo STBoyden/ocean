@@ -5,22 +5,6 @@ use std::{collections::hash_map::Values, collections::HashMap, env};
 #[derive(Deserialize, Serialize)]
 pub struct DirectoryHashMap(HashMap<String, String>);
 
-#[derive(Deserialize, Serialize)]
-struct Inner {
-    name: String,
-    language: Language,
-    libraries: Vec<String>,
-    library_directories: Vec<String>,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Project {
-    project: Inner,
-    directories: DirectoryHashMap,
-    compiler: Compiler,
-    platforms: Option<Platforms>,
-}
-
 impl DirectoryHashMap {
     pub fn new() -> Self {
         Self {
@@ -54,6 +38,33 @@ impl DirectoryHashMap {
         let object_dir = self.0.get_mut("object_dir").expect("Could not find object_dir key.");
         *object_dir = dir;
     }
+}
+
+#[derive(Deserialize, Serialize)]
+struct Inner {
+    name: String,
+    language: Language,
+    libraries: Vec<String>,
+    library_directories: Vec<String>,
+}
+
+impl Default for Inner {
+    fn default() -> Self {
+        Self {
+            name: "Ocean Project".to_string(),
+            language: Language::C,
+            libraries: Vec::default(),
+            library_directories: Vec::default(),
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct Project {
+    project: Inner,
+    directories: DirectoryHashMap,
+    compiler: Compiler,
+    platforms: Option<Platforms>,
 }
 
 impl Project {
@@ -132,17 +143,6 @@ impl Project {
         let language = self.project.language;
 
         self.get_compiler_mut().set_compiler_command(language, compiler_command);
-    }
-}
-
-impl Default for Inner {
-    fn default() -> Self {
-        Self {
-            name: "Ocean Project".to_string(),
-            language: Language::C,
-            libraries: Vec::default(),
-            library_directories: Vec::default(),
-        }
     }
 }
 
