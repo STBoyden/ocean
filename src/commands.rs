@@ -326,12 +326,17 @@ Options:
 
         let mut lock = File::create(lock_file).expect("Could not create/truncate Ocean.lock");
         cache.update_cache(&project)?;
-        lock.write_all(
-            toml::to_string_pretty(&cache)
-                .expect("Could not convert into Cache")
-                .as_bytes(),
-        )
-        .expect("Could not write to Ocean.lock");
+        if !cache.get_files().is_empty() {
+            lock.write_all(
+                toml::to_string_pretty(&cache)
+                    .expect("Could not convert into Cache")
+                    .as_bytes(),
+            )
+            .expect("Could not write to Ocean.lock");
+        } else {
+            eprintln!("Could not find any files in source directory.");
+            remove_file(lock_file).expect("Could not remove lock file");
+        }
 
         Ok(())
     }

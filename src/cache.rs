@@ -9,7 +9,7 @@ use std::{
 };
 
 #[derive(Debug, Deserialize, Serialize)]
-struct FileData {
+pub struct FileData {
     pub path: PathBuf,
     pub hash: String,
 }
@@ -121,4 +121,6 @@ impl Cache {
 
         Ok(())
     }
+
+    pub fn get_files(&self) -> &Vec<FileData> { &self.files }
 }
