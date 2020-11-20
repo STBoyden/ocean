@@ -25,7 +25,7 @@ fn parse_args(mut args: Vec<String>) -> Result<(), String> {
         "build" => Commands::build(&args[1..])?,
         "clean" => Commands::clean()?,
         "get" =>
-            if platforms.contains(&args[1].as_str()) {
+            if !args[1..].is_empty() && platforms.contains(&args[1].as_str()) {
                 Commands::get_data_platform(&args[2..], args[1].clone())?;
             } else {
                 Commands::get_data(&args[1..])?;
@@ -34,7 +34,7 @@ fn parse_args(mut args: Vec<String>) -> Result<(), String> {
         "new" => Commands::new_project(&args[1..])?,
         "run" => Commands::run(&args[1..])?,
         "set" =>
-            if platforms.contains(&args[1].as_str()) {
+            if !args[1..].is_empty() && platforms.contains(&args[1].as_str()) {
                 Commands::set_data_platform(&args[2..], args[1].clone())?;
             } else {
                 Commands::set_data(&args[1..])?;
@@ -49,6 +49,6 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if let Err(e) = parse_args(args) {
-        eprintln!("Error: '{}'", e);
+        eprintln!("Error: {}", e);
     }
 }
