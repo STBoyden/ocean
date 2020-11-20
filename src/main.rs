@@ -8,38 +8,38 @@ mod language;
 mod platform;
 mod project;
 
-use commands::*;
+use commands::Commands;
 use std::env;
 
 fn parse_args(mut args: Vec<String>) -> Result<(), String> {
     let platforms = ["linux", "osx", "windows"];
 
     if args[1..].is_empty() {
-        help(None);
+        Commands::help(None);
         return Err("No arguments were specified".to_string());
     } else {
         args = args[1..].to_vec();
     }
 
     match args[0].as_str() {
-        "build" => build(&args[1..])?,
-        "clean" => clean()?,
+        "build" => Commands::build(&args[1..])?,
+        "clean" => Commands::clean()?,
         "get" =>
             if platforms.contains(&args[1].as_str()) {
-                get_data_platform(&args[2..], args[1].clone())?;
+                Commands::get_data_platform(&args[2..], args[1].clone())?;
             } else {
-                get_data(&args[1..])?;
+                Commands::get_data(&args[1..])?;
             },
-        "help" | "--help" => help(None),
-        "new" => new(&args[1..])?,
-        "run" => run(&args[1..])?,
+        "help" | "--help" => Commands::help(None),
+        "new" => Commands::new(&args[1..])?,
+        "run" => Commands::run(&args[1..])?,
         "set" =>
             if platforms.contains(&args[1].as_str()) {
-                set_data_platform(&args[2..], args[1].clone())?;
+                Commands::set_data_platform(&args[2..], args[1].clone())?;
             } else {
-                set_data(&args[1..])?;
+                Commands::set_data(&args[1..])?;
             },
-        _ => help(Some(&args[0])),
+        _ => Commands::help(Some(&args[0])),
     };
 
     Ok(())
