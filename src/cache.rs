@@ -43,12 +43,19 @@ impl Cache {
         }
     }
 
-    fn get_all_files(project: &Project) -> Vec<FileData> {
-        let dir_contents: Vec<PathBuf> = read_dir(project.get_directories().get_source_dir())
-            .expect("Could not read source directory")
-            .into_iter()
-            .map(|x| x.unwrap().path())
-            .collect();
+    fn get_all_files(project: &Project) -> Result<Vec<FileData>, String> {
+        let dir_contents: Vec<PathBuf> = match read_dir(project.get_directories().get_source_dir()) {
+            Ok(cont) => cont,
+            Err(e) =>
+                return Err(format!(
+                    "Could not read source directory (\"{}\"): {}",
+                    project.get_directories().get_source_dir(),
+                    e
+                )),
+        }
+        .into_iter()
+        .map(|x| x.unwrap().path())
+        .collect();
 
         let mut paths = vec![];
         dir_contents.iter().for_each(|x| {
@@ -78,22 +85,22 @@ impl Cache {
             });
         }
 
-        files
+        Ok(files)
     }
 
-    pub fn new(project: &Project) -> Self {
-        Self {
-            files: Self::get_all_files(project),
-        }
+    pub fn new(project: &Project) -> Result<Self, String> {
+        Ok(Self {
+            files: Self::get_all_files(project)?,
+        })
     }
 
-    pub fn get_changed<'a>(&self, project: &Project) -> Result<Vec<PathBuf>, &'a str> {
+    pub fn get_changed<'a>(&self, project: &Project) -> Result<Vec<PathBuf>, String> {
         if !Path::new("Ocean.lock").exists() {
-            return Err("Cannot find Ocean.lock in project root.");
+            return Err("Cannot find Ocean.lock in project root.".to_string());
         };
 
         let mut changed = vec![];
-        let current_files = Self::get_all_files(project);
+        let current_files = Self::get_all_files(project)?;
         let diffs = self.files.iter().zip(current_files.iter());
 
         for (old_diff, curr_diff) in diffs {
@@ -110,7 +117,7 @@ impl Cache {
             return Err("Cannot find Ocean.lock in project root.");
         }
 
-        self.files = Self::get_all_files(project);
+        self.files = Self::get_all_files(project).unwrap();
 
         Ok(())
     }

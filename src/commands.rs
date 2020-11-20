@@ -103,9 +103,9 @@ pub fn build(args: &[String]) -> Result<(), String> {
                 .expect("Could not read Ocean.lock content as valid UTF-8")
                 .as_str(),
         )
-        .unwrap_or_else(|_| Cache::new(&project))
+        .unwrap_or_else(|_| Cache::new(&project).unwrap())
     } else {
-        Cache::new(&project)
+        Cache::new(&project)?
     };
 
     for directory in project.get_directories().get_all_dirs() {
@@ -463,7 +463,7 @@ Options:
             "-c" | "--compiler" => project.get_compiler_mut().set_compiler_command(
                 lang,
                 args.get(index + 2)
-                    .unwrap_or_else(|| panic!("Did not specify custom {} compiler", lang))
+                    .expect(format!("Did not specify custom {} compiler", lang).as_str())
                     .clone(),
             ),
             "--ccls" => do_ccls = true,
@@ -588,6 +588,7 @@ pub fn clean() -> Result<(), String> {
 
 pub fn set_data(args: &[String]) -> Result<(), String> {
     let mut project = get_toml(None, None)?;
+    let mut do_clean = true;
 
     let help = "
 Usage: ocean set [KEY]
@@ -623,7 +624,10 @@ Option:
 
     if !args[1..].is_empty() {
         match (args[0].as_str(), &args[1]) {
-            ("name", n) => project.set_name(n.clone()),
+            ("name", n) => {
+                project.set_name(n.clone());
+                do_clean = false;
+            },
             (c, lang) if c == "lang" || c == "language" => match lang.to_lowercase().as_str() {
                 "c++" | "cxx" => project.set_language(Language::CXX),
                 "c" => project.set_language(Language::C),
@@ -661,6 +665,11 @@ Option:
     } else {
         return Err("No data provided to set key with".to_string());
     }
+
+    if do_clean {
+        clean()?
+    }
+
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
     let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
     let toml_content = pretty_toml(toml_content);
@@ -810,6 +819,8 @@ Option:
 
         platform
     });
+
+    clean()?;
 
     let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
     let toml_content = toml::to_string_pretty(&project).expect("Could not transform project data into Ocean.toml");
