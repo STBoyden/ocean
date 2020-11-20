@@ -396,7 +396,7 @@ Options:
         Ok(())
     }
 
-    pub fn new(args: &[String]) -> Result<(), String> {
+    pub fn new_project(args: &[String]) -> Result<(), String> {
         let mut project = Project::default();
 
         let mut do_ccls = false;
@@ -466,7 +466,7 @@ Options:
                 "-c" | "--compiler" => project.get_compiler_mut().set_compiler_command(
                     lang,
                     args.get(index + 2)
-                        .expect(format!("Did not specify custom {} compiler", lang).as_str())
+                        .unwrap_or_else(|| panic!(("Did not specify custom {} compiler", lang)))
                         .clone(),
                 ),
                 "--ccls" => do_ccls = true,
@@ -583,8 +583,8 @@ int main() {
                 continue;
             }
 
-            remove_file("Ocean.lock").unwrap_or_else(|_| ());
-            remove_dir_all(directory).unwrap_or_else(|_| ());
+            remove_file("Ocean.lock").unwrap_or(());
+            remove_dir_all(directory).unwrap_or(());
         }
 
         Ok(())

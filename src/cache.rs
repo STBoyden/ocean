@@ -94,7 +94,7 @@ impl Cache {
         })
     }
 
-    pub fn get_changed<'a>(&self, project: &Project) -> Result<Vec<PathBuf>, String> {
+    pub fn get_changed(&self, project: &Project) -> Result<Vec<PathBuf>, String> {
         if !Path::new("Ocean.lock").exists() {
             return Err("Cannot find Ocean.lock in project root.".to_string());
         };

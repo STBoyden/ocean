@@ -31,7 +31,7 @@ fn parse_args(mut args: Vec<String>) -> Result<(), String> {
                 Commands::get_data(&args[1..])?;
             },
         "help" | "--help" => Commands::help(None),
-        "new" => Commands::new(&args[1..])?,
+        "new" => Commands::new_project(&args[1..])?,
         "run" => Commands::run(&args[1..])?,
         "set" =>
             if platforms.contains(&args[1].as_str()) {

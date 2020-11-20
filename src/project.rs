@@ -82,9 +82,9 @@ impl Project {
                 "windows" => &platform.windows,
                 _ => &None,
             } {
-                return &pl.libraries;
+                &pl.libraries
             } else {
-                return &self.project.libraries;
+                &self.project.libraries
             }
         } else {
             &self.project.libraries
@@ -99,9 +99,9 @@ impl Project {
                 "windows" => &platform.windows,
                 _ => &None,
             } {
-                return &pl.libraries;
+                &pl.libraries
             } else {
-                return &self.project.library_directories;
+                &self.project.library_directories
             }
         } else {
             &self.project.library_directories
