@@ -1,7 +1,6 @@
 use crate::{cache::Cache, editors::*, language::*, platform::*, project::*};
 use std::{
-    env,
-    env::{current_dir, set_current_dir},
+    env::{self, current_dir, set_current_dir},
     ffi::OsStr,
     fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
     io::prelude::*,
