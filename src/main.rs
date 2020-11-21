@@ -9,14 +9,14 @@ mod platform;
 mod project;
 
 use commands::Commands;
-use std::env;
+use std::{borrow::Cow, env};
 
-fn parse_args(mut args: Vec<String>) -> Result<(), String> {
+fn parse_args(mut args: Vec<String>) -> Result<(), Cow<'static, str>> {
     let platforms = ["linux", "osx", "windows"];
 
     if args[1..].is_empty() {
         Commands::help(None);
-        return Err("No arguments were specified".to_string());
+        return Err("No arguments were specified".into());
     } else {
         args = args[1..].to_vec();
     }

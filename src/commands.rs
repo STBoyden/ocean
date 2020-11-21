@@ -1,5 +1,6 @@
 use crate::{cache::Cache, editors::*, language::*, platform::*, project::*};
 use std::{
+    borrow::Cow,
     env::{self, current_dir, set_current_dir},
     ffi::OsStr,
     fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
@@ -28,12 +29,12 @@ impl Commands {
         split.join("\n")
     }
 
-    fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, String> {
+    fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, Cow<'static, str>> {
         let search_count = search_count.unwrap_or(0);
 
         if search_count > 4 {
             return Err(
-                "Could not find Ocean.toml, please make sure that you are in a valid project directory.".to_string(),
+                "Could not find Ocean.toml, please make sure that you are in a valid project directory.".into(),
             );
         }
 
@@ -47,7 +48,7 @@ impl Commands {
 
                 if let Ok(mut f) = File::open("Ocean.toml") {
                     if f.read_to_string(&mut contents).is_err() {
-                        return Err("Could not read file".to_string());
+                        return Err("Could not read file".into());
                     }
                 };
 

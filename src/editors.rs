@@ -1,8 +1,8 @@
 use crate::project::Project;
-use std::{collections::HashMap, env, path::Path};
+use std::{borrow::Cow, collections::HashMap, env, path::Path};
 
 pub trait Editor<T> {
-    fn get_compiler_path(project: &Project) -> Result<String, String> {
+    fn get_compiler_path(project: &Project) -> Result<String, Cow<'static, str>> {
         let mut ret_path = String::new();
 
         match env::var_os("PATH") {
@@ -31,11 +31,11 @@ pub trait Editor<T> {
                         ret_path = path.to_str().unwrap().to_string();
                     }
                 },
-            None => return Err("Cannot find PATH environment variable".to_string()),
+            None => return Err("Cannot find PATH environment variable".into()),
         };
 
         if ret_path == "" {
-            return Err("Cannot find compiler in PATH. Did you add the compiler's directory to the PATH?".to_string());
+            return Err("Cannot find compiler in PATH. Did you add the compiler's directory to the PATH?".into());
         }
 
         Ok(ret_path)

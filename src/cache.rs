@@ -1,6 +1,7 @@
 use crate::project::Project;
 use serde_derive::*;
 use std::{
+    borrow::Cow,
     collections::hash_map::DefaultHasher,
     fs::*,
     hash::*,
@@ -43,7 +44,7 @@ impl Cache {
         }
     }
 
-    fn get_all_files(project: &Project) -> Result<Vec<FileData>, String> {
+    fn get_all_files(project: &Project) -> Result<Vec<FileData>, Cow<'static, str>> {
         let dir_contents: Vec<PathBuf> = match read_dir(project.get_directories().get_source_dir()) {
             Ok(cont) => cont,
             Err(e) =>
@@ -51,7 +52,8 @@ impl Cache {
                     "Could not read source directory (\"{}\"): {}",
                     project.get_directories().get_source_dir(),
                     e
-                )),
+                )
+                .into()),
         }
         .into_iter()
         .map(|x| x.unwrap().path())
@@ -88,15 +90,15 @@ impl Cache {
         Ok(files)
     }
 
-    pub fn new(project: &Project) -> Result<Self, String> {
+    pub fn new(project: &Project) -> Result<Self, Cow<'static, str>> {
         Ok(Self {
             files: Self::get_all_files(project)?,
         })
     }
 
-    pub fn get_changed(&self, project: &Project) -> Result<Vec<PathBuf>, String> {
+    pub fn get_changed(&self, project: &Project) -> Result<Vec<PathBuf>, Cow<'static, str>> {
         if !Path::new("Ocean.lock").exists() {
-            return Err("Cannot find Ocean.lock in project root.".to_string());
+            return Err("Cannot find Ocean.lock in project root.".into());
         }
 
         let mut changed = vec![];
@@ -112,9 +114,9 @@ impl Cache {
         Ok(changed)
     }
 
-    pub fn update_cache<'a>(&mut self, project: &Project) -> Result<(), &'a str> {
+    pub fn update_cache<'a>(&mut self, project: &Project) -> Result<(), Cow<'static, str>> {
         if !Path::new("Ocean.lock").exists() {
-            return Err("Cannot find Ocean.lock in project root.");
+            return Err("Cannot find Ocean.lock in project root.".into());
         }
 
         self.files = Self::get_all_files(project).unwrap();
