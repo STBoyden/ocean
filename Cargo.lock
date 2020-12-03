@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "ocean"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "serde",
  "serde_derive",
