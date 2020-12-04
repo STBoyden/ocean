@@ -152,7 +152,7 @@ impl Project {
 
     pub fn get_binaries(&self) -> Vec<Binary> {
         if let Some(bins) = self.bins.clone() {
-            return bins.clone();
+            return bins;
         }
 
         Vec::new()

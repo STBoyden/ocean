@@ -114,7 +114,7 @@ impl Cache {
         Ok(changed)
     }
 
-    pub fn update_cache<'a>(&mut self, project: &Project) -> Result<(), Cow<'static, str>> {
+    pub fn update_cache(&mut self, project: &Project) -> Result<(), Cow<'static, str>> {
         if !Path::new("Ocean.lock").exists() {
             return Err("Cannot find Ocean.lock in project root.".into());
         }

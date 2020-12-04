@@ -102,7 +102,7 @@ Create and manage C and C++ projects.
         let compiler_command = project.get_compiler().get_compiler_command(&binary.language);
 
         let mut command = Command::new(compiler_command);
-        command.args(flags.split(" "));
+        command.args(flags.split(' '));
 
         for library_directory in project.get_library_dirs() {
             command.arg(format!("-L{}", library_directory));
@@ -220,7 +220,7 @@ Options:
             } else {
                 for bin_name in bins.iter() {
                     for binary in project.get_binaries().iter_mut() {
-                        if *bin_name.clone() == binary.name {
+                        if (*bin_name).clone() == binary.name {
                             Self::build_file(&project, binary, build_mode)?
                         } else {
                             continue;
@@ -492,11 +492,11 @@ Options:
 
                 Ok(())
             } else {
-                return Err(format!(
+                Err(format!(
                     "Cannot find the \"{}\" executable. Did it compile properly?",
                     executable_name
                 )
-                .into());
+                .into())
             }
         };
 
