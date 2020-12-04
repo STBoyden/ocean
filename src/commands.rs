@@ -84,12 +84,65 @@ Create and manage C and C++ projects.
         Path::new(filename).extension().and_then(OsStr::to_str)
     }
 
-    pub fn build(args: &[String]) -> Result<(), String> {
+    fn build_file(project: &Project, binary: &mut Binary, build_mode: &str) -> Result<(), Cow<'static, str>> {
+        let executable_name = format!("{}{}", binary.name, env::consts::EXE_SUFFIX);
+
+        let flags: String = match build_mode {
+            "release" => format!("-Wall -Wextra -O3 {}", binary.flags.join(" ")),
+            _ => format!("-g -ggdb -Wall -Wextra -Og {}", binary.flags.join(" ")),
+        }
+        .trim()
+        .into();
+
+        let build_path = format!("{}/{}", project.get_directories().get_build_dir(), build_mode);
+        if !Path::new(&build_path).exists() {
+            create_dir_all(&build_path).expect("Could not create build output directory");
+        }
+
+        let compiler_command = project.get_compiler().get_compiler_command(&binary.language);
+
+        let mut command = Command::new(compiler_command);
+        command.args(flags.split(" "));
+
+        for library_directory in project.get_library_dirs() {
+            command.arg(format!("-L{}", library_directory));
+        }
+
+        for library in project.get_libraries() {
+            command.arg(format!("-l{}", library));
+        }
+
+        command
+            .arg(binary.path.clone())
+            .arg("-o")
+            .arg(format!("{}/{}", build_path, executable_name));
+
+        println!(
+            "Compiling {} to {}...",
+            binary.path.file_name().unwrap().to_str().unwrap(),
+            executable_name
+        );
+
+        if let Err(e) = command.spawn().expect("Could not execute compiler").wait() {
+            return Err(format!("Could not compile file: {}", e).into());
+        }
+
+        println!(
+            "Compiled {} to {}",
+            binary.path.file_name().unwrap().to_str().unwrap(),
+            executable_name
+        );
+
+        Ok(())
+    }
+
+    pub fn build(args: &[String]) -> Result<(), Cow<'static, str>> {
         let project = Self::get_toml(None, None)?;
 
         let mut build_mode = "debug";
         let mut is_verbose = false;
         let mut compiler_flags = String::from("");
+        let mut bins = Vec::new();
 
         let executable_name = format!("{}{}", project.get_name(), env::consts::EXE_SUFFIX);
 
@@ -133,19 +186,48 @@ Usage: ocean build [OPTIONS] [-f [FLAGS]]
 By default, this builds projects in debug mode.
 
 Options:
-    -d, --debug     Builds the current project in debug mode (this is turned on by default)
-    -r, --release   Builds the current project in release mode
-    -v, --verbose   Makes the compiler output verbose.
-    -f, --flags     Passes custom flags to the compiler.
+    -d, --debug                 Builds the current project in debug mode (this is turned on by default).
+    -r, --release               Builds the current project in release mode.
+    --bin [all, <bin_name>]     Builds a single file as a single executable.
+    -v, --verbose               Makes the compiler output verbose.
+    -f, --flags                 Passes custom flags to the compiler.
             "
                     );
                     return Ok(());
                 },
                 "-r" | "--release" => build_mode = "release",
                 "-d" | "--debug" => build_mode = "debug",
+                "--bin" => bins.push(
+                    if let Some(arg) = args.get(index as usize + 1) {
+                        arg
+                    } else {
+                        return Err("Did not provide binary name or all as paramater to --bin".into());
+                    },
+                ),
                 "-v" | "--verbose" => is_verbose = true,
                 "-f" | "--flags" => compiler_flags = args[index as usize..].to_vec().join(" "),
                 _ => (),
+            }
+        }
+
+        if !project.get_binaries().is_empty() && !bins.is_empty() {
+            if *bins[0] == "all" {
+                for binary in project.get_binaries().iter_mut() {
+                    Self::build_file(&project, binary, build_mode)?
+                }
+
+                return Ok(());
+            } else {
+                for bin_name in bins.iter() {
+                    for binary in project.get_binaries().iter_mut() {
+                        if *bin_name.clone() == binary.name {
+                            Self::build_file(&project, binary, build_mode)?
+                        } else {
+                            continue;
+                        }
+                    }
+                }
+                return Ok(());
             }
         }
 
@@ -155,16 +237,26 @@ Options:
         let mut compilable = vec![];
 
         let source_files = read_dir(project.get_directories().get_source_dir().to_string()).unwrap();
-        for file in source_files {
+        'a: for file in source_files {
             let file_name = file.unwrap().path().clone();
 
             if Path::new(&file_name).is_dir() {
                 continue;
             }
 
+            for binary in project.get_binaries().into_iter() {
+                if binary.path == file_name {
+                    continue 'a;
+                }
+            }
+
             if Self::get_extension_from_filename(file_name.to_str().unwrap()).unwrap() == file_extension {
                 compilable.push(file_name);
             }
+        }
+
+        if compilable.is_empty() {
+            return Err("No compilable files found.".into());
         }
 
         if lock_file.exists() {
@@ -215,7 +307,7 @@ Options:
                     } else {
                         default
                     },
-                _ => return Err("Unsupported operating system".to_string()),
+                _ => return Err("Unsupported operating system".into()),
             }
             .join(" ")
         } else {
@@ -278,17 +370,14 @@ Options:
                 .expect("Could not execute compiler")
                 .wait()
             {
-                return Err(format!("Compiler command returned with error code: {}", e));
+                return Err(format!("Compiler command returned with error code: {}", e).into());
             };
 
             if let Err(e) = rename(
                 format!("{}.o", file.file_stem().unwrap().to_str().unwrap()),
                 format!("{}/{}.o", object_path, file.file_stem().unwrap().to_str().unwrap()),
             ) {
-                return Err(format!(
-                    "Cannot move object file: {}. Did the project compile properly?",
-                    e
-                ));
+                return Err(format!("Cannot move object file: {}. Did the project compile properly?", e).into());
             }
 
             println!("Compiled {}.o", file.file_stem().unwrap().to_str().unwrap());
@@ -321,7 +410,7 @@ Options:
         }
 
         if let Err(e) = c.spawn().expect("Could not find compiler executable").wait() {
-            return Err(format!("Compiler command returned with error code: {}", e));
+            return Err(format!("Compiler command returned with error code: {}", e).into());
         };
 
         let mut lock = File::create(lock_file).expect("Could not create/truncate Ocean.lock");
@@ -341,9 +430,10 @@ Options:
         Ok(())
     }
 
-    pub fn run(args: &[String]) -> Result<(), String> {
+    pub fn run(args: &[String]) -> Result<(), Cow<'static, str>> {
         let mut build_mode = "debug";
         let mut program_args = vec![];
+        let mut bins = vec![];
 
         for (index, arg) in args.iter().enumerate() {
             match arg.as_str() {
@@ -355,16 +445,24 @@ Usage: ocean run [OPTIONS]
 By default, this run projects in debug mode.
 
 Options:
-    -d, --debug     Runs the current project in debug mode (this is turned on by default)
-    -r, --release   Runs the current project in release mode
-    -v, --verbose   Makes the compiler output verbose.
-    -f, --flags     Passes custom flags to the compiler.
+    -d, --debug                 Runs the current project in debug mode (this is turned on by default)
+    -r, --release               Runs the current project in release mode
+    --bin [all, <bin_name>]     Builds a single file as a single executable.
+    -v, --verbose               Makes the compiler output verbose.
+    -f, --flags                 Passes custom flags to the compiler.
             "
                     );
                     return Ok(());
                 },
                 "-r" | "--release" => build_mode = "release",
                 "-d" | "--debug" => build_mode = "debug",
+                "--bin" => bins.push(
+                    if let Some(arg) = args.get(index as usize + 1) {
+                        arg
+                    } else {
+                        return Err("Did not provide binary name or all as paramater to --bin".into());
+                    },
+                ),
                 "--" => program_args = args[index + 1..].to_vec(),
                 _ => (), // -v and -f are handled by the build function
             }
@@ -374,29 +472,54 @@ Options:
 
         let project = Self::get_toml(None, None)?;
 
-        let build_path = format!("{}/{}", project.get_directories().get_build_dir(), build_mode);
+        let run = |name: String, program_args: &Vec<String>| -> Result<(), Cow<'static, str>> {
+            let executable_name = format!("{}{}", name, env::consts::EXE_SUFFIX);
+            let executable_path = format!(
+                "{}/{}/{}",
+                project.get_directories().get_build_dir(),
+                build_mode,
+                executable_name
+            );
 
-        let executable_name = {
-            if cfg!(windows) {
-                format!("{}.exe", project.get_name())
+            if Path::new(&executable_path).exists() {
+                println!("\n[Running '{}']", executable_name);
+                Command::new(format!("./{}", executable_path))
+                    .args(program_args)
+                    .spawn()
+                    .expect("Could not start application")
+                    .wait()
+                    .expect("Application exited unexpectedly");
+
+                Ok(())
             } else {
-                project.get_name().clone()
+                return Err(format!(
+                    "Cannot find the \"{}\" executable. Did it compile properly?",
+                    executable_name
+                )
+                .into());
             }
-            .replace(" ", "_")
         };
 
-        let executable_path = format!("{}/{}", build_path, executable_name);
+        if !bins.is_empty() {
+            let project_binaries = project.get_binaries();
 
-        if Path::new(&executable_path).exists() {
-            Command::new(format!("./{}", executable_path))
-                .args(program_args)
-                .spawn()
-                .expect("Could not start application")
-                .wait()
-                .expect("Application exited unexpectedly");
-        } else {
-            return Err("Could not find the \"{}\" executable. Did the project compiler properly?".to_string());
+            if bins[0] == "all" {
+                for binary in project_binaries {
+                    run(binary.name.clone(), &program_args)?;
+                }
+            } else {
+                for bin_name in bins {
+                    for binary in project_binaries.iter().filter(|binary| binary.name == *bin_name) {
+                        run(binary.name.clone(), &program_args)?;
+                    }
+                }
+            }
+
+            return Ok(());
         }
+
+        let executable_name = format!("{}{}", project.get_name(), env::consts::EXE_SUFFIX);
+        run(executable_name, &program_args)?;
 
         Ok(())
     }
@@ -698,6 +821,7 @@ This gets the current values inside the Ocean project file related to a data key
                     platform name, it will get specific keys for a specified platform.
 
 Option:
+    bins, binaries                  Prints the names of the individual binaries for the current project.
     build_dir                       Prints the build directory for the current project.
     c++_compiler, cxx_compiler      Prints the compiler being used for the C++ project.
     c_compiler                      Prints the compiler being used for the C project.
@@ -741,6 +865,7 @@ Option:
                 "{:#?}",
                 project.get_compiler().get_compiler_flags(project.get_language())
             ),
+            "bins" | "binaries" => println!("{:#?}", project.get_binaries()),
             _ => eprintln!("Cannot find data key. Use --help to get help for this command."),
         };
         Ok(())

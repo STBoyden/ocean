@@ -1,0 +1,42 @@
+[project]
+name = 'examples-test'
+language = 'C'
+libraries = []
+library_directories = []
+
+[directories]
+source_dir = './src'
+object_dir = './obj'
+build_dir = './build'
+
+[compiler.c]
+command = 'gcc'
+flags = []
+
+[compiler.cxx]
+command = 'g++'
+flags = []
+
+[[bins]]
+name = 'HelloWorld'
+path = './src/hello-world.c'
+language = 'C'
+flags = []
+
+[[bins]]
+name = 'HelloWorldCpp'
+path = './src/hello-world.cpp'
+language = 'CXX'
+flags = []
+
+[[bins]]
+name = 'HelloName'
+path = './src/hello-name.c'
+language = 'C'
+flags = []
+
+[[bins]]
+name = 'HelloNameCpp'
+path = './src/hello-name.cpp'
+language = 'CXX'
+flags = []

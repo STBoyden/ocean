@@ -1,9 +1,17 @@
 use crate::{compiler::*, language::*, platform::*};
 use serde_derive::*;
-use std::{collections::hash_map::Values, collections::HashMap, env};
+use std::{collections::hash_map::Values, collections::HashMap, env, path::PathBuf};
 
 #[derive(Deserialize, Serialize)]
 pub struct DirectoryHashMap(HashMap<String, String>);
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct Binary {
+    pub name: String,
+    pub path: PathBuf,
+    pub language: Language,
+    pub flags: Vec<String>,
+}
 
 impl DirectoryHashMap {
     pub fn new() -> Self {
@@ -65,6 +73,7 @@ pub struct Project {
     directories: DirectoryHashMap,
     compiler: Compiler,
     platforms: Option<Platforms>,
+    bins: Option<Vec<Binary>>,
 }
 
 impl Project {
@@ -82,13 +91,11 @@ impl Project {
                 "windows" => &platform.windows,
                 _ => &None,
             } {
-                &pl.libraries
-            } else {
-                &self.project.libraries
+                return &pl.libraries;
             }
-        } else {
-            &self.project.libraries
         }
+
+        &self.project.libraries
     }
 
     pub fn get_library_dirs(&self) -> &Vec<String> {
@@ -99,13 +106,11 @@ impl Project {
                 "windows" => &platform.windows,
                 _ => &None,
             } {
-                &pl.libraries
-            } else {
-                &self.project.library_directories
+                return &pl.libraries;
             }
-        } else {
-            &self.project.library_directories
         }
+
+        &self.project.library_directories
     }
 
     pub fn get_name(&self) -> &String { &self.project.name }
@@ -144,6 +149,14 @@ impl Project {
 
         self.get_compiler_mut().set_compiler_command(language, compiler_command);
     }
+
+    pub fn get_binaries(&self) -> Vec<Binary> {
+        if let Some(bins) = self.bins.clone() {
+            return bins.clone();
+        }
+
+        Vec::new()
+    }
 }
 
 impl Default for Project {
@@ -153,6 +166,12 @@ impl Default for Project {
             directories: DirectoryHashMap::new(),
             compiler: Compiler::default(),
             platforms: None,
+            bins: Some(vec![Binary {
+                name: "HelloWorld".into(),
+                path: "./src/hello-world.c".into(),
+                language: Language::C,
+                flags: vec![],
+            }]),
         }
     }
 }

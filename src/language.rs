@@ -1,7 +1,7 @@
 use serde_derive::*;
 use std::fmt;
 
-#[derive(Deserialize, Serialize, Eq, PartialEq, Hash, Copy, Clone)]
+#[derive(Deserialize, Serialize, Eq, PartialEq, Hash, Copy, Clone, Debug)]
 pub enum Language {
     C,
     CXX,
