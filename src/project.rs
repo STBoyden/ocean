@@ -166,12 +166,7 @@ impl Default for Project {
             directories: DirectoryHashMap::new(),
             compiler: Compiler::default(),
             platforms: None,
-            bins: Some(vec![Binary {
-                name: "HelloWorld".into(),
-                path: "./src/hello-world.c".into(),
-                language: Language::C,
-                flags: vec![],
-            }]),
+            bins: None,
         }
     }
 }
