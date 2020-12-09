@@ -5,7 +5,7 @@ use std::{
     ffi::OsStr,
     fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
     io::prelude::*,
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
 };
 
@@ -265,7 +265,7 @@ Options:
                 compilable = compilable
                     .iter_mut()
                     .enumerate()
-                    .filter(|(i, x)| **x == changed[*i])
+                    .filter(|(i, x)| *x == changed.get(*i - 1).unwrap_or(&PathBuf::new()))
                     .map(|x| x.1.clone())
                     .collect();
             } else if !Path::new(&format!("{}/{}", build_path, executable_name)).exists() {
@@ -381,12 +381,15 @@ Options:
             }
 
             println!("Compiled {}.o", file.file_stem().unwrap().to_str().unwrap());
+        }
 
-            object_files.push(format!(
-                "{}/{}.o",
-                object_path,
-                file.file_stem().unwrap().to_str().unwrap()
-            ));
+        for file in read_dir(&object_path)
+            .expect("Could not read objects directory")
+            .into_iter()
+        {
+            if let Ok(file) = file {
+                object_files.push(format!("{}/{}", object_path, file.file_name().to_str().unwrap()));
+            }
         }
 
         let mut c = Command::new(compiler);
