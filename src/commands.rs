@@ -1,6 +1,5 @@
-use crate::{cache::Cache, editors::*, language::*, platform::*, project::*};
+use crate::{cache::Cache, common::StrRet, editors::*, language::*, platform::*, project::*};
 use std::{
-    borrow::Cow,
     env::{self, current_dir, set_current_dir},
     ffi::OsStr,
     fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
@@ -29,7 +28,7 @@ impl Commands {
         split.join("\n")
     }
 
-    fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, Cow<'static, str>> {
+    fn get_toml(path: Option<&str>, search_count: Option<u32>) -> Result<Project, StrRet> {
         let search_count = search_count.unwrap_or(0);
 
         if search_count > 4 {
@@ -84,7 +83,7 @@ Create and manage C and C++ projects.
         Path::new(filename).extension().and_then(OsStr::to_str)
     }
 
-    fn build_file(project: &Project, binary: &mut Binary, build_mode: &str) -> Result<(), Cow<'static, str>> {
+    fn build_file(project: &Project, binary: &mut Binary, build_mode: &str) -> Result<(), StrRet> {
         let executable_name = format!("{}{}", binary.name, env::consts::EXE_SUFFIX);
 
         let flags: String = match build_mode {
@@ -136,7 +135,7 @@ Create and manage C and C++ projects.
         Ok(())
     }
 
-    pub fn build(args: &[String]) -> Result<(), Cow<'static, str>> {
+    pub fn build(args: &[String]) -> Result<(), StrRet> {
         let project = Self::get_toml(None, None)?;
 
         let mut build_mode = "debug";
@@ -433,7 +432,7 @@ Options:
         Ok(())
     }
 
-    pub fn run(args: &[String]) -> Result<(), Cow<'static, str>> {
+    pub fn run(args: &[String]) -> Result<(), StrRet> {
         let mut build_mode = "debug";
         let mut program_args = vec![];
         let mut bins = vec![];
@@ -475,7 +474,7 @@ Options:
 
         let project = Self::get_toml(None, None)?;
 
-        let run = |name: String, program_args: &Vec<String>| -> Result<(), Cow<'static, str>> {
+        let run = |name: String, program_args: &Vec<String>| -> Result<(), StrRet> {
             let executable_name = format!("{}{}", name, env::consts::EXE_SUFFIX);
             let executable_path = format!(
                 "{}/{}/{}",

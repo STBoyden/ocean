@@ -2,6 +2,7 @@
 
 mod cache;
 mod commands;
+mod common;
 mod compiler;
 mod editors;
 mod language;
@@ -9,9 +10,10 @@ mod platform;
 mod project;
 
 use commands::Commands;
-use std::{borrow::Cow, env};
+use common::StrRet;
+use std::env;
 
-fn parse_args(mut args: Vec<String>) -> Result<(), Cow<'static, str>> {
+fn parse_args(mut args: Vec<String>) -> Result<(), StrRet> {
     let platforms = ["linux", "osx", "windows"];
 
     if args[1..].is_empty() {

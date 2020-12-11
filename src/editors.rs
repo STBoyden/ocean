@@ -1,8 +1,8 @@
-use crate::project::Project;
-use std::{borrow::Cow, collections::HashMap, env, path::Path};
+use crate::{common::StrRet, project::Project};
+use std::{collections::HashMap, env, path::Path};
 
 pub trait Editor<T> {
-    fn get_compiler_path(project: &Project) -> Result<String, Cow<'static, str>> {
+    fn get_compiler_path(project: &Project) -> Result<String, StrRet> {
         let mut ret_path = String::new();
 
         match env::var_os("PATH") {

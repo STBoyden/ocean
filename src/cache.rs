@@ -1,7 +1,6 @@
-use crate::project::Project;
+use crate::{common::StrRet, project::Project};
 use serde_derive::*;
 use std::{
-    borrow::Cow,
     collections::hash_map::DefaultHasher,
     fs::*,
     hash::*,
@@ -44,7 +43,7 @@ impl Cache {
         }
     }
 
-    fn get_all_files(project: &Project) -> Result<Vec<FileData>, Cow<'static, str>> {
+    fn get_all_files(project: &Project) -> Result<Vec<FileData>, StrRet> {
         let dir_contents: Vec<PathBuf> = match read_dir(project.get_directories().get_source_dir()) {
             Ok(cont) => cont,
             Err(e) =>
@@ -90,13 +89,13 @@ impl Cache {
         Ok(files)
     }
 
-    pub fn new(project: &Project) -> Result<Self, Cow<'static, str>> {
+    pub fn new(project: &Project) -> Result<Self, StrRet> {
         Ok(Self {
             files: Self::get_all_files(project)?,
         })
     }
 
-    pub fn get_changed(&self, project: &Project) -> Result<Vec<PathBuf>, Cow<'static, str>> {
+    pub fn get_changed(&self, project: &Project) -> Result<Vec<PathBuf>, StrRet> {
         if !Path::new("Ocean.lock").exists() {
             return Err("Cannot find Ocean.lock in project root.".into());
         }
@@ -114,7 +113,7 @@ impl Cache {
         Ok(changed)
     }
 
-    pub fn update_cache(&mut self, project: &Project) -> Result<(), Cow<'static, str>> {
+    pub fn update_cache(&mut self, project: &Project) -> Result<(), StrRet> {
         if !Path::new("Ocean.lock").exists() {
             return Err("Cannot find Ocean.lock in project root.".into());
         }
