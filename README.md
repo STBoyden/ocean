@@ -7,6 +7,8 @@
     </i>
 </h3>
 
+<h5><i>"It's cute"</i> - <strong>EntireTwix, 2021</strong><h5>
+
 Ocean is a project manager, similar to Rust's Cargo, for C and C++ written with
 Rust - *that other systems programming language*. The command syntax is very
 similar to that of Cargo's.
