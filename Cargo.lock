@@ -5,7 +5,6 @@ name = "ocean"
 version = "0.5.4"
 dependencies = [
  "serde",
- "serde_derive",
  "toml",
 ]
 
@@ -32,6 +31,9 @@ name = "serde"
 version = "1.0.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96fe57af81d28386a513cbc6858332abc6117cfdb5999647c6444b8f43a370a5"
+dependencies = [
+ "serde_derive",
+]
 
 [[package]]
 name = "serde_derive"

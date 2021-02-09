@@ -9,6 +9,9 @@ mod language;
 mod platform;
 mod project;
 
+#[macro_use]
+extern crate serde;
+
 use commands::Commands;
 use common::StrRet;
 use std::env;

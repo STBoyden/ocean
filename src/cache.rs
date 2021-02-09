@@ -1,5 +1,4 @@
 use crate::{common::StrRet, project::Project};
-use serde_derive::*;
 use std::{
     collections::hash_map::DefaultHasher,
     fs::*,

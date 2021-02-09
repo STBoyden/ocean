@@ -1,5 +1,4 @@
 use crate::language::*;
-use serde_derive::*;
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct CompilerOptions {
