@@ -5,6 +5,7 @@ mod commands;
 mod common;
 mod compiler;
 mod editors;
+mod git;
 mod language;
 mod platform;
 mod project;
@@ -44,6 +45,7 @@ fn parse_args(mut args: Vec<String>) -> Result<(), StrRet> {
             } else {
                 Commands::set_data(&args[1..])?;
             },
+        // TODO(#4) Submodule command
         _ => Commands::help(Some(&args[0])),
     };
 

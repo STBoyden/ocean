@@ -1,4 +1,4 @@
-use crate::{compiler::*, language::*, platform::*};
+use crate::{compiler::*, git, language::*, platform::*};
 use std::{collections::hash_map::Values, collections::HashMap, env, path::PathBuf};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -25,6 +25,7 @@ impl Default for DirectoryHashMap {
             },
         }
     }
+}
 
 impl DirectoryHashMap {
     pub fn get_all_dirs(&self) -> Values<'_, String, String> { self.0.values() }
@@ -72,6 +73,8 @@ pub struct Project {
     project: Inner,
     directories: DirectoryHashMap,
     compiler: Compiler,
+    #[cfg(feature = "git")]
+    submodules: git::Submodules,
     platforms: Option<Platforms>,
     bins: Option<Vec<Binary>>,
 }

@@ -1,3 +1,5 @@
+#[cfg(feature = "git")]
+use crate::git;
 use crate::{cache::Cache, common::StrRet, editors::*, language::*, platform::*, project::*};
 use std::{
     env::{self, current_dir, set_current_dir},
@@ -623,7 +625,6 @@ int main() {
 }
 ",
         };
-        let ignore_content = "/build/\n/obj/\nOcean.lock";
 
         create_dir_all(&format!("{}/src", project.get_name())).expect("Could not create project and source directory");
         let mut file =
@@ -643,11 +644,8 @@ int main() {
             .write_all(code_content.as_bytes())
             .unwrap_or_else(|_| panic!("Could not write to main.{}", project.get_language().get_extension()));
 
-        let mut ignore_file =
-            File::create(&format!("{}/.gitignore", project.get_name())).expect("Could not create .gitignore");
-        ignore_file
-            .write_all(ignore_content.as_bytes())
-            .expect("Could not write into .gitignore");
+        #[cfg(feature = "git")]
+        git::write_ignore(&project);
 
         if do_ccls {
             // TODO
@@ -1034,4 +1032,6 @@ Option:
 
         Ok(())
     }
+
+    // TODO(#4) Submodule command
 }
