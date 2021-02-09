@@ -1,9 +1,6 @@
 use crate::{compiler::*, language::*, platform::*};
 use std::{collections::hash_map::Values, collections::HashMap, env, path::PathBuf};
 
-#[derive(Deserialize, Serialize)]
-pub struct DirectoryHashMap(HashMap<String, String>);
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Binary {
     pub name: String,
@@ -12,8 +9,11 @@ pub struct Binary {
     pub flags: Vec<String>,
 }
 
-impl DirectoryHashMap {
-    pub fn new() -> Self {
+#[derive(Deserialize, Serialize)]
+pub struct DirectoryHashMap(HashMap<String, String>);
+
+impl Default for DirectoryHashMap {
+    fn default() -> Self {
         Self {
             0: {
                 let mut hm = HashMap::new();
@@ -26,6 +26,7 @@ impl DirectoryHashMap {
         }
     }
 
+impl DirectoryHashMap {
     pub fn get_all_dirs(&self) -> Values<'_, String, String> { self.0.values() }
     pub fn get_build_dir(&self) -> &String { &self.0["build_dir"] }
     pub fn get_objects_dir(&self) -> &String { &self.0["object_dir"] }
@@ -66,7 +67,7 @@ impl Default for Inner {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct Project {
     project: Inner,
     directories: DirectoryHashMap,
@@ -155,17 +156,5 @@ impl Project {
         }
 
         Vec::new()
-    }
-}
-
-impl Default for Project {
-    fn default() -> Self {
-        Self {
-            project: Inner::default(),
-            directories: DirectoryHashMap::new(),
-            compiler: Compiler::default(),
-            platforms: None,
-            bins: None,
-        }
     }
 }
