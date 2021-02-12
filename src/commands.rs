@@ -1199,5 +1199,5 @@ Option:
         Ok(())
     }
 
-    // TODO(#4) Submodule command
+    // TODO(#5) Submodule command
 }

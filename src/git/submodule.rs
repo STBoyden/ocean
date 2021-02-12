@@ -8,6 +8,7 @@ pub struct Submodules {
     pub submodules: Vec<Submodule>,
 }
 
+    // TODO(#5) Submodule add
 impl Default for Submodules {
     fn default() -> Self {
         Self {
@@ -37,8 +38,7 @@ impl Submodule {
         }
     }
 
-    // TODO(#4) Submodule add
-    // TODO(#4) Submodule update
-    // TODO(#4) Submodule detect build system
-    // TODO(#4) Submodule build
+    // TODO(#5) Submodule update
+    // TODO(#5) Submodule detect build system
+    // TODO(#5) Submodule build
 }
