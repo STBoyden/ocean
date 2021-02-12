@@ -12,7 +12,9 @@ pub trait Editor<T> {
                         format!(
                             "{}/{}.exe",
                             path.to_str().unwrap(),
-                            project.get_compiler().get_compiler_command(project.get_language())
+                            project
+                                .get_compiler()
+                                .get_compiler_command(project.get_language())
                         )
                         .as_str(),
                     )
@@ -21,7 +23,9 @@ pub trait Editor<T> {
                             format!(
                                 "{}/{}",
                                 path.to_str().unwrap(),
-                                project.get_compiler().get_compiler_command(project.get_language())
+                                project
+                                    .get_compiler()
+                                    .get_compiler_command(project.get_language())
                             )
                             .as_str(),
                         )
@@ -35,7 +39,9 @@ pub trait Editor<T> {
         };
 
         if ret_path == "" {
-            return Err("Cannot find compiler in PATH. Did you add the compiler's directory to the PATH?".into());
+            return Err("Cannot find compiler in PATH. Did you add the compiler's \
+                        directory to the PATH?"
+                .into());
         }
 
         Ok(ret_path)
@@ -117,7 +123,9 @@ impl VsCode {
 }}",
                 env::consts::OS,
                 Self::get_compiler_path(project).unwrap(),
-                project.get_compiler().get_compiler_command(project.get_language()),
+                project
+                    .get_compiler()
+                    .get_compiler_command(project.get_language()),
                 command
             ),
         );
@@ -210,7 +218,11 @@ impl VsCode {
                 format!(
                     "{}{}",
                     project.get_name(),
-                    if env::consts::OS == "windows" { ".exe" } else { "" }
+                    if env::consts::OS == "windows" {
+                        ".exe"
+                    } else {
+                        ""
+                    }
                 )
             ),
         );

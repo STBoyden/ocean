@@ -43,19 +43,20 @@ impl Cache {
     }
 
     fn get_all_files(project: &Project) -> Result<Vec<FileData>, StrRet> {
-        let dir_contents: Vec<PathBuf> = match read_dir(project.get_directories().get_source_dir()) {
-            Ok(cont) => cont,
-            Err(e) =>
-                return Err(format!(
-                    "Could not read source directory (\"{}\"): {}",
-                    project.get_directories().get_source_dir(),
-                    e
-                )
-                .into()),
-        }
-        .into_iter()
-        .map(|x| x.unwrap().path())
-        .collect();
+        let dir_contents: Vec<PathBuf> =
+            match read_dir(project.get_directories().get_source_dir()) {
+                Ok(cont) => cont,
+                Err(e) =>
+                    return Err(format!(
+                        "Could not read source directory (\"{}\"): {}",
+                        project.get_directories().get_source_dir(),
+                        e
+                    )
+                    .into()),
+            }
+            .into_iter()
+            .map(|x| x.unwrap().path())
+            .collect();
 
         let mut paths = vec![];
         dir_contents.iter().for_each(|x| {

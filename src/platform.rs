@@ -16,7 +16,10 @@ impl PlatformOptions {
     pub fn get_library_dirs(&self) -> &Vec<String> { &self.library_directories }
 
     pub fn add_library(&mut self, lib_path: String) {
-        println!("Added the '{}' library for {}", lib_path, self.platform_name);
+        println!(
+            "Added the '{}' library for {}",
+            lib_path, self.platform_name
+        );
         self.libraries.push(lib_path);
     }
 
@@ -35,7 +38,8 @@ impl PlatformOptions {
             compiler_command,
             self.platform_name
         );
-        self.get_compiler_mut().set_compiler_command(language, compiler_command);
+        self.get_compiler_mut()
+            .set_compiler_command(language, compiler_command);
     }
 }
 

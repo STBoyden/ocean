@@ -34,17 +34,26 @@ impl DirectoryHashMap {
     pub fn get_source_dir(&self) -> &String { &self.0["source_dir"] }
 
     pub fn set_build_dir(&mut self, dir: String) {
-        let build_dir = self.0.get_mut("build_dir").expect("Could not find build_dir key.");
+        let build_dir = self
+            .0
+            .get_mut("build_dir")
+            .expect("Could not find build_dir key.");
         *build_dir = dir;
     }
 
     pub fn set_source_dir(&mut self, dir: String) {
-        let source_dir = self.0.get_mut("source_dir").expect("Could not find source_dir key.");
+        let source_dir = self
+            .0
+            .get_mut("source_dir")
+            .expect("Could not find source_dir key.");
         *source_dir = dir;
     }
 
     pub fn set_objects_dir(&mut self, dir: String) {
-        let object_dir = self.0.get_mut("object_dir").expect("Could not find object_dir key.");
+        let object_dir = self
+            .0
+            .get_mut("object_dir")
+            .expect("Could not find object_dir key.");
         *object_dir = dir;
     }
 }
@@ -83,7 +92,9 @@ impl Project {
     pub fn get_compiler(&self) -> &Compiler { &self.compiler }
     pub fn get_compiler_mut(&mut self) -> &mut Compiler { &mut self.compiler }
     pub fn get_directories(&self) -> &DirectoryHashMap { &self.directories }
-    pub fn get_directories_mut(&mut self) -> &mut DirectoryHashMap { &mut self.directories }
+    pub fn get_directories_mut(&mut self) -> &mut DirectoryHashMap {
+        &mut self.directories
+    }
     pub fn get_language(&self) -> &Language { &self.project.language }
 
     pub fn get_libraries(&self) -> &Vec<String> {
@@ -138,7 +149,8 @@ impl Project {
             language.as_string(),
             compiler_command
         );
-        self.get_compiler_mut().set_compiler_command(language, compiler_command);
+        self.get_compiler_mut()
+            .set_compiler_command(language, compiler_command);
     }
 
     pub fn set_current_compiler(&mut self, compiler_command: String) {
@@ -150,7 +162,8 @@ impl Project {
 
         let language = self.project.language;
 
-        self.get_compiler_mut().set_compiler_command(language, compiler_command);
+        self.get_compiler_mut()
+            .set_compiler_command(language, compiler_command);
     }
 
     pub fn get_binaries(&self) -> Vec<Binary> {
