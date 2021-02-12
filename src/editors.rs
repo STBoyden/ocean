@@ -38,7 +38,7 @@ pub trait Editor<T> {
             None => return Err("Cannot find PATH environment variable".into()),
         };
 
-        if ret_path == "" {
+        if ret_path.is_empty() {
             return Err("Cannot find compiler in PATH. Did you add the compiler's \
                         directory to the PATH?"
                 .into());

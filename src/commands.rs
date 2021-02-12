@@ -24,7 +24,7 @@ impl Commands {
                 None => continue,
             };
 
-            if split[i] != "" && below.starts_with('[') {
+            if !split[i].is_empty() && below.starts_with('[') {
                 split.insert(i + 1, "")
             }
         }
@@ -367,13 +367,13 @@ Options:
 
         let flags = match build_mode {
             "release" =>
-                if extra_flags != "" {
+                if !extra_flags.is_empty() {
                     format!("-Wall -Wextra -O3 {}", extra_flags)
                 } else {
                     String::from("-Wall -Wextra -O3")
                 },
             _ =>
-                if extra_flags != "" {
+                if !extra_flags.is_empty() {
                     format!("-g -ggdb -Wall -Wextra -Og {}", extra_flags)
                 } else {
                     String::from("-g -ggdb -Wall -Wextra -Og")
@@ -634,7 +634,7 @@ Options:
                 },
                 _ => {
                     let name = args[0].to_string();
-                    if name != "" {
+                    if !name.is_empty() {
                         project.set_name(name);
                     } else {
                         return Err("Did not specify project name".to_string());
