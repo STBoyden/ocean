@@ -1,7 +1,8 @@
 use std::{
+    collections::HashMap,
     fs::create_dir,
     path::Path,
-    process::{self, Stdio},
+    process::{Command, Stdio},
 };
 use url::Url;
 
@@ -13,13 +14,22 @@ pub struct Submodules {
     #[serde(default = "default_path")]
     pub path: String,
     #[serde(default, rename(serialize = "module", deserialize = "module"))]
-    pub submodules: Vec<Submodule>,
+    pub submodules: HashMap<String, Submodule>,
 }
 
 impl Submodules {
     // TODO(#5) Submodules update
-    // TODO(#5) Submodules remove
+    pub fn _update_all(&self) { unimplemented!() }
+
+    pub fn remove_submodule<S: Into<String>>(&mut self, directory_name: S) {
+        // TODO(#5) Submodules remove: spawn git command to remove submodules from
+        // .gitsubmodules and third_party/{directory_name}.
+        self.submodules.remove(&directory_name.into());
+    }
+
     // TODO(#5) Submodules build
+    pub fn _build_all(&self) { unimplemented!() }
+
     pub fn add_submodule<S: Into<String>>(
         &mut self,
         origin: S,
@@ -36,28 +46,19 @@ impl Submodules {
             ));
         }
 
-        self.submodules
-            .push(Submodule::new(origin.clone(), branch.clone()));
-
-        let mut command = process::Command::new("git");
+        let mut command = Command::new("git");
         command.args(&["submodule", "add", origin.as_str(), "-b", branch.as_str()]);
+
+        let submodule = Submodule::new(origin, branch);
 
         if let Some(directory_name) = directory_name {
             command.arg(format!("{}/{}", self.path, directory_name));
         } else {
-            let directory_name = &Url::parse(&origin)
-                .expect(&format!("Could not parse '{}' as URL", origin))
-                .path_segments()
-                .expect(&format!(
-                    "Could not get path segments of '{}'. Are you sure you entered a \
-                     Git repository?",
-                    origin
-                ))
-                .map(|x| x.to_owned())
-                .collect::<Vec<String>>()[0];
-
-            command.arg(format!("{}/{}", default_path(), directory_name));
+            command.arg(format!("{}/{}", self.path, submodule.directory_name));
         }
+
+        self.submodules
+            .insert(submodule.directory_name.clone(), submodule);
 
         command
             .stderr(Stdio::null())
@@ -72,7 +73,7 @@ impl Default for Submodules {
     fn default() -> Self {
         Self {
             path: default_path(),
-            submodules: vec![],
+            submodules: HashMap::new(),
         }
     }
 }
@@ -82,17 +83,32 @@ pub struct Submodule {
     origin: String,
     #[serde(default = "default_branch")]
     branch: String,
+    directory_name: String,
 }
 
 impl Submodule {
     pub fn new<S: Into<String>>(origin: S, branch: S) -> Self {
+        let origin = origin.into();
         Self {
-            origin: origin.into(),
+            origin: origin.clone(),
             branch: branch.into(),
+            directory_name: {
+                let s = Url::parse(&origin)
+                    .expect(&format!("Could not parse '{}' as URL", origin));
+
+                s.path_segments()
+                    .expect(&format!(
+                        "Could not get path segments of '{}'. Are you sure you entered \
+                         a Git repository?",
+                        origin
+                    ))
+                    .map(|x| x.to_owned())
+                    .collect::<Vec<String>>()[0]
+                    .clone()
+            },
         }
     }
 
-    // TODO(#5) Submodule update
     // TODO(#5) Submodule detect build system
     // TODO(#5) Submodule build
 }
