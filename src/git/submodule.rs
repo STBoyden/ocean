@@ -18,13 +18,76 @@ pub struct Submodules {
 }
 
 impl Submodules {
+    fn make_path(path: &str) -> String {
+        Path::new(path)
+            .as_os_str()
+            .to_str()
+            .expect("Could not convert OsStr to &str")
+            .to_string()
+    }
+
     // TODO(#5) Submodules update
     pub fn _update_all(&self) { unimplemented!() }
 
     pub fn remove_submodule<S: Into<String>>(&mut self, directory_name: S) {
-        // TODO(#5) Submodules remove: spawn git command to remove submodules from
-        // .gitsubmodules and third_party/{directory_name}.
-        self.submodules.remove(&directory_name.into());
+        let directory_name = directory_name.into();
+        self.submodules.remove(&directory_name);
+
+        Command::new("git")
+            .args(&[
+                "submodule",
+                "deinit",
+                "-f",
+                &Self::make_path(&format!("{}/{}", self.path, directory_name)),
+            ])
+            .stdout(Stdio::null())
+            .spawn()
+            .expect("Could not open git")
+            .wait()
+            .expect("Could not remove submodule");
+
+        #[cfg(unix)]
+        Command::new("rm")
+            .args(&[
+                "-rf",
+                &Self::make_path(&format!(
+                    ".git/modules/{}/{}",
+                    self.path, directory_name
+                )),
+            ])
+            .stdout(Stdio::null())
+            .spawn()
+            .expect("Could not open rm")
+            .wait()
+            .expect("Could not remove submodule folder");
+
+        #[cfg(windows)]
+        Command::new("rmdir")
+            .args(&[
+                "/S",
+                "/Q",
+                &Self::make_path(&format!(
+                    ".git\\modules\\{}\\{}",
+                    self.path, directory_name
+                )),
+            ])
+            .stdout(Stdio::null())
+            .spawn()
+            .expect("Could not open RMDIR")
+            .wait()
+            .expect("Could not remove submodule folder");
+
+        Command::new("git")
+            .args(&[
+                "rm",
+                "-f",
+                &Self::make_path(&format!("{}/{}", self.path, directory_name)),
+            ])
+            .stdout(Stdio::null())
+            .spawn()
+            .expect("Could not open git")
+            .wait()
+            .expect("Could not remove submodule folder from .gitmodules");
     }
 
     // TODO(#5) Submodules build
