@@ -9,7 +9,7 @@ use url::Url;
 fn default_path() -> String { "third_party".into() }
 fn default_branch() -> String { "master".into() }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Submodules {
     #[serde(default = "default_path")]
     pub path: String,
@@ -143,7 +143,7 @@ impl Default for Submodules {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Submodule {
     origin: String,
     #[serde(default = "default_branch")]
