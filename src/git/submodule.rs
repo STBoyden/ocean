@@ -110,15 +110,17 @@ impl Submodules {
         }
 
         let mut command = Command::new("git");
-        command.args(&["submodule", "add", origin.as_str(), "-b", branch.as_str()]);
+        command.args(&["submodule", "add", origin.as_str()]);
 
-        let submodule = Submodule::new(origin, branch);
+        let submodule = Submodule::new(origin, branch.clone());
 
         if let Some(directory_name) = directory_name {
             command.arg(format!("{}/{}", self.path, directory_name));
         } else {
             command.arg(format!("{}/{}", self.path, submodule.directory_name));
         }
+
+        command.args(&["-b", branch.as_str()]);
 
         self.submodules
             .insert(submodule.directory_name.clone(), submodule);
