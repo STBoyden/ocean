@@ -74,6 +74,7 @@ impl Commands {
         if argument.is_some() {
             println!("Command \"{}\" not found.", argument.unwrap());
         }
+        // TODO(#5) Add submodule/submodules to help display
         println!(
             "
 Usage: ocean [OPTION]
@@ -739,10 +740,18 @@ int main() {
             });
 
         #[cfg(feature = "git")]
-        git::write_ignore(&project);
+        {
+            git::write_ignore(&project);
+
+            Command::new("git")
+                .args(&["init", project.get_name()])
+                .spawn()
+                .expect("Could not spawn git")
+                .wait()
+                .expect("git init did not run");
+        }
 
         if do_ccls {
-            // TODO
             let _ = CCLS::new();
             let _ = File::create(&format!("{}/.ccls", project.get_name()))
                 .expect("Could not create .ccls");
@@ -1200,4 +1209,45 @@ Option:
     }
 
     // TODO(#5) Submodule command
+    pub fn submodules(args: &[String]) -> Result<(), String> {
+        let mut project = Self::get_toml(None, None)?;
+
+        match args.get(0) {
+            Some(sc) => match sc.as_str() {
+                "add" => {
+                    let origin = args.get(1).expect("Did not provide origin URL");
+
+                    project.get_submodules_mut().add_submodule(
+                        origin,
+                        args.get(2).cloned(),
+                        args.get(3).cloned(),
+                    );
+                },
+                "remove" => {
+                    let directory_name = args
+                        .get(1)
+                        .expect("Did not provide submodule directory name");
+
+                    project
+                        .get_submodules_mut()
+                        .remove_submodule(directory_name);
+                },
+                "list" => {
+                    println!("{:#?}", project.get_submodules().submodules);
+                },
+                _ => (),
+            },
+            None =>
+                return Err("Did not provide an argument to submodules command".into()),
+        }
+
+        let mut file = File::create("./Ocean.toml").expect("Couldn't open Ocean.toml");
+        let toml_content = toml::to_string_pretty(&project)
+            .expect("Could not transform project data into Ocean.toml");
+        let toml_content = Self::pretty_toml(toml_content);
+        file.write_all(toml_content.as_bytes())
+            .expect("Could not write to Ocean.toml");
+
+        Ok(())
+    }
 }

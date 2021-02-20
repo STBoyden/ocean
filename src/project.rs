@@ -1,4 +1,6 @@
-use crate::{compiler::*, git, language::*, platform::*};
+#![cfg(feature = "git")]
+use crate::git::*;
+use crate::{compiler::*, language::*, platform::*};
 use std::{collections::hash_map::Values, collections::HashMap, env, path::PathBuf};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -83,7 +85,7 @@ pub struct Project {
     directories: DirectoryHashMap,
     compiler: Compiler,
     #[cfg(feature = "git")]
-    submodules: git::Submodules,
+    submodules: Submodules,
     platforms: Option<Platforms>,
     bins: Option<Vec<Binary>>,
 }
@@ -130,6 +132,8 @@ impl Project {
     pub fn get_name(&self) -> &String { &self.project.name }
     pub fn get_platform(&self) -> &Option<Platforms> { &self.platforms }
     pub fn get_platform_mut(&mut self) -> &mut Option<Platforms> { &mut self.platforms }
+    pub fn get_submodules(&self) -> &Submodules { &self.submodules }
+    pub fn get_submodules_mut(&mut self) -> &mut Submodules { &mut self.submodules }
     pub fn set_language(&mut self, lang: Language) { self.project.language = lang; }
     pub fn set_name(&mut self, name: String) { self.project.name = name; }
 

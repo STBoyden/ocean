@@ -45,7 +45,7 @@ fn parse_args(mut args: Vec<String>) -> Result<(), StrRet> {
             } else {
                 Commands::set_data(&args[1..])?;
             },
-        // TODO(#5) Submodule command
+        "submodules" | "submodule" => Commands::submodules(&args[1..])?,
         _ => Commands::help(Some(&args[0])),
     };
 
