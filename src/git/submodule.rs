@@ -103,10 +103,12 @@ impl Submodules {
         let origin: String = origin.into();
 
         if !Path::new(&self.path).exists() {
-            create_dir(&self.path).expect(&format!(
-                "Could not create '{}' submodule directory",
-                self.path
-            ));
+            create_dir(&self.path).unwrap_or_else(|e| {
+                panic!(
+                    "Could not create '{}' submodule directory: {}",
+                    self.path, e
+                )
+            });
         }
 
         let mut command = Command::new("git");
@@ -158,15 +160,18 @@ impl Submodule {
             origin: origin.clone(),
             branch: branch.into(),
             directory_name: {
-                let s = Url::parse(&origin)
-                    .expect(&format!("Could not parse '{}' as URL", origin));
+                let s = Url::parse(&origin).unwrap_or_else(|e| {
+                    panic!("Could not parse '{}' as URL: {}", origin, e)
+                });
 
                 s.path_segments()
-                    .expect(&format!(
-                        "Could not get path segments of '{}'. Are you sure you entered \
-                         a Git repository?",
-                        origin
-                    ))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Could not get path segments of '{}'. Are you sure you \
+                             entered a Git repository? ",
+                            origin,
+                        )
+                    })
                     .map(|x| x.to_owned())
                     .collect::<Vec<String>>()[1]
                     .clone()
