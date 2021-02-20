@@ -126,11 +126,11 @@ impl Submodules {
             .insert(submodule.directory_name.clone(), submodule);
 
         command
-            .stderr(Stdio::null())
+            .stdout(Stdio::null())
             .spawn()
-            .expect("Could not spawn Git")
+            .expect("Could not spawn git")
             .wait()
-            .expect("Git did not run");
+            .expect("git did not run");
     }
 }
 
@@ -168,7 +168,7 @@ impl Submodule {
                         origin
                     ))
                     .map(|x| x.to_owned())
-                    .collect::<Vec<String>>()[0]
+                    .collect::<Vec<String>>()[1]
                     .clone()
             },
         }
