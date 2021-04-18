@@ -1,3 +1,5 @@
+![ocean](https://socialify.git.ci/stboyden/ocean/image?description=1&font=Source%20Code%20Pro&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2FSTBoyden%2Focean%2Fmaster%2Flogo.svg&owner=1&pattern=Formal%20Invitation&pulls=1&stargazers=1&theme=Dark)
+
 <img src="banner.svg" style="display: block; margin: 0 auto; width: 75%;" />
 <h4 style="text-align: center"><i>A build system/project manager for C/C++</i></h4>
 
